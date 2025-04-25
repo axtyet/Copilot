@@ -55,7 +55,7 @@ jobs:
       # Fork MoeKoeMusic 一款开源简洁高颜值的酷狗第三方客户端 supports Windows / macOS / Linux
     - name: Fork  MoeKoeMusic
       run: |
-        mkdir -p copilot-repo/Peng-YM
+        mkdir -p copilot-repo/MoeKoeMusic
         git clone -b main https://github.com/iAJue/MoeKoeMusic.git asdf_Tmp
         cp -r asdf_Tmp/* copilot-repo/MoeKoeMusic
         rm -rf asdf_Tmp
