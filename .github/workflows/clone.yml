@@ -15,63 +15,63 @@ jobs:
     - name: Checkout target repository
       uses: actions/checkout@v4.1.0
       with:
-        repository: axtyet/copilot
-        path: copilot-repo
+        repository: axtyet/Copilot
+        path: Copilot-repo
 
 ######
 
       # Fork Kazumi 基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率APK。
     - name: Fork Kazumi
       run: |
-        mkdir -p copilot-repo/Kazumi
+        mkdir -p Copilot-repo/Kazumi
         git clone -b main https://github.com/Predidit/Kazumi.git  czy_Tmp
-        cp -r czy_Tmp/* copilot-repo/Kazumi
+        cp -r czy_Tmp/* Copilot-repo/Kazumi
         rm -rf czy_Tmp 
      
       # Fork AlgerMusicPlayer About一个第三方音乐播放器、本地服务、桌面歌词、音乐下载、最高音质APK
     - name: Fork AlgerMusicPlayer 
       run: |
-        mkdir -p copilot-repo/AlgerMusicPlayer
+        mkdir -p Copilot-repo/AlgerMusicPlayer
         git clone -b dev_electron https://github.com/algerkong/AlgerMusicPlayer.git  cyz_Tmp
-        cp -r cyz_Tmp/* copilot-repo/AlgerMusicPlayer
+        cp -r cyz_Tmp/* Copilot-repo/AlgerMusicPlayer
         rm -rf cyz_Tmp
     
       # Fork AniCh 一个支持超分辨率的在线动漫弹幕APP。多平台，多番剧源，多弹幕，高清无广告。追番看番必备软件APK。
     - name: Fork AniCh
       run: |
-        mkdir -p copilot-repo/AniCh
+        mkdir -p Copilot-repo/AniCh
         git clone -b main https://github.com/Sle2p/AniCh.git  yzc_Tmp
-        cp -r yzc_Tmp/* copilot-repo/AniCh
+        cp -r yzc_Tmp/* Copilot-repo/AniCh
         rm -rf yzc_Tmp   
 
       # Fork ClashMetaForAndroid 
     - name: Fork ClashMetaForAndroide
       run: |
-        mkdir -p copilot-repo/ClashMeta
+        mkdir -p Copilot-repo/ClashMeta
         git clone -b main https://github.com/MetaCubeX/ClashMetaForAndroid.git  ewq_Tmp
-        cp -r ewq_Tmp/* copilot-repo/ClashMeta
+        cp -r ewq_Tmp/* Copilot-repo/ClashMeta
         rm -rf ewq_Tmp
     
       # Fork MoeKoeMusic 一款开源简洁高颜值的酷狗第三方客户端 supports Windows / macOS / Linux
     - name: Fork  MoeKoeMusic
       run: |
-        mkdir -p copilot-repo/MoeKoeMusic
+        mkdir -p Copilot-repo/MoeKoeMusic
         git clone -b main https://github.com/iAJue/MoeKoeMusic.git asdf_Tmp
-        cp -r asdf_Tmp/* copilot-repo/MoeKoeMusic
+        cp -r asdf_Tmp/* Copilot-repo/MoeKoeMusic
         rm -rf asdf_Tmp
 
       # Fork SaltPlayerSource 椒盐音乐
     - name: Fork SaltPlayerSource
       run: |
-        mkdir -p copilot-repo/SaltPlayerSource
+        mkdir -p Copilot-repo/SaltPlayerSource
         git clone -b main https://github.com/Moriafly/SaltPlayerSource.git qaz_Tmp
-        cp -r qaz_Tmp/* copilot-repo/SaltPlayerSource
+        cp -r qaz_Tmp/* Copilot-repo/SaltPlayerSource
         rm -rf qaz_Tmp
 
       # 保存、推送   
     - name: Add and Commits
       run: |
-        cd copilot-repo
+        cd Copilot-repo
          if [[ -n $(git status -s) ]]; then
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
