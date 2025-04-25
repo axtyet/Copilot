@@ -71,7 +71,7 @@ jobs:
       # 保存、推送   
     - name: Add and Commits
       run: |
-        cd Luminous-repo
+        cd copilot-repo
          if [[ -n $(git status -s) ]]; then
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
