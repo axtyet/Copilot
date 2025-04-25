@@ -1,0 +1,27 @@
+{
+  "isProxy": false,
+  "proxyConfig": {
+    "enable": false,
+    "protocol": "http",
+    "host": "127.0.0.1",
+    "port": 7890
+  },
+  "enableRealIP": false,
+  "realIP": "",
+  "noAnimate": false,
+  "animationSpeed": 1,
+  "author": "Alger",
+  "authorUrl": "https://github.com/algerkong",
+  "musicApiPort": 30488,
+  "closeAction": "ask",
+  "musicQuality": "higher",
+  "fontFamily": "system-ui",
+  "fontScope": "global",
+  "autoPlay": false,
+  "downloadPath": "",
+  "language": "zh-CN",
+  "alwaysShowDownloadButton": false,
+  "unlimitedDownload": false,
+  "enableMusicUnblock": true,
+  "enabledMusicSources": ["migu", "kugou", "pyncmd", "bilibili", "youtube"]
+}
