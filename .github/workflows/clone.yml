@@ -64,7 +64,7 @@ jobs:
     - name: Fork SaltPlayerSource
       run: |
         mkdir -p copilot-repo/SaltPlayerSource
-        git clone -b main https://github.com/axtyet/SaltPlayerSource.git qaz_Tmp
+        git clone -b main https://github.com/Moriafly/SaltPlayerSource.git qaz_Tmp
         cp -r qaz_Tmp/* copilot-repo/SaltPlayerSource
         rm -rf qaz_Tmp
 
