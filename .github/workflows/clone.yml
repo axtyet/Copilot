@@ -1,5 +1,5 @@
 
-name: Clone APP
+name:  Fork OS lists
 on:
   workflow_dispatch:
   schedule:
@@ -32,7 +32,7 @@ jobs:
     - name: Fork AlgerMusicPlayer 
       run: |
         mkdir -p copilot-repo/AlgerMusicPlayer
-        git clone -b main https://github.com/algerkong/AlgerMusicPlayer.git  cyz_Tmp
+        git clone -b dev_electron https://github.com/algerkong/AlgerMusicPlayer.git  cyz_Tmp
         cp -r cyz_Tmp/* copilot-repo/AlgerMusicPlayer
         rm -rf cyz_Tmp
     
