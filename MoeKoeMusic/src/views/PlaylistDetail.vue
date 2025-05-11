@@ -652,9 +652,9 @@ const selectTrack = (index, event) => {
         // 普通点击
         const existingIndex = selectedTracks.value.indexOf(index);
         if (existingIndex === -1) {
-            selectedTracks.value = [index];
+            selectedTracks.value.push(index);
         } else {
-            selectedTracks.value = [];
+            selectedTracks.value.splice(existingIndex, 1);
         }
     }
     
