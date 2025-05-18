@@ -139,22 +139,22 @@ export function createLyricsWindow() {
     }
 
     // 监听窗口移动事件，限制窗口位置
-    let moveTimer;
-    lyricsWindow.on('move', () => {
-        if (moveTimer) return;
-        moveTimer = setTimeout(() => {
-            const bounds = lyricsWindow.getBounds();
-            const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-            if (bounds.y + bounds.height > screenHeight) {
-                lyricsWindow.setPosition(bounds.x, screenHeight - bounds.height);
-            }
-            if (bounds.y < 0) {
-                lyricsWindow.setPosition(bounds.x, 0);
-            }
-            clearTimeout(moveTimer);
-            moveTimer = null;
-        }, 3000);
-    });
+    // let moveTimer;
+    // lyricsWindow.on('move', () => {
+    //     if (moveTimer) return;
+    //     moveTimer = setTimeout(() => {
+    //         const bounds = lyricsWindow.getBounds();
+    //         const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+    //         if (bounds.y + bounds.height > screenHeight) {
+    //             lyricsWindow.setPosition(bounds.x, screenHeight - bounds.height);
+    //         }
+    //         if (bounds.y < 0) {
+    //             lyricsWindow.setPosition(bounds.x, 0);
+    //         }
+    //         clearTimeout(moveTimer);
+    //         moveTimer = null;
+    //     }, 3000);
+    // });
 
     // 设置窗口置顶级别
     lyricsWindow.setAlwaysOnTop(true, 'screen-saver');

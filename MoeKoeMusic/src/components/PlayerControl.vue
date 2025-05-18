@@ -384,7 +384,8 @@ const playSongFromQueue = async (direction) => {
     }
 
     console.log(`[PlayerControl] 从队列播放${direction === 'next' ? '下' : '上'}一首`);
-
+    audio.pause();
+    playing.value = false;
     if (direction == 'next' && NextSong.value.length > 0) {
         // 添加下一首播放
         console.log('[PlayerControl] 播放预定的下一首:', NextSong.value[0].name);
@@ -806,6 +807,8 @@ onUnmounted(() => {
 defineExpose({
     addSongToQueue: async (hash, name, img, author) => {
         console.log('[PlayerControl] 外部调用addSongToQueue:', name);
+        audio.pause();
+        playing.value = false;
         const result = await addSongToQueue(hash, name, img, author);
         if (result && result.song) {
             await playSong(result.song);
@@ -831,7 +834,8 @@ defineExpose({
             } else {
                 console.log('[PlayerControl] 添加歌单后自动播放第一首:', songs[0].name);
             }
-
+            audio.pause();
+            playing.value = false;
             // 播放选中的歌曲
             const result = await addSongToQueue(
                 songs[songIndex].hash,
@@ -849,6 +853,8 @@ defineExpose({
     addToNext,
     addCloudMusicToQueue: async (hash, name, author, timeLength) => {
         console.log('[PlayerControl] 外部调用addCloudMusicToQueue:', name);
+        audio.pause();
+        playing.value = false;
         const result = await addCloudMusicToQueue(hash, name, author, timeLength);
         if (result && result.song) {
             await playSong(result.song);
@@ -894,6 +900,8 @@ defineExpose({
 // 从播放队列接收事件
 const onQueueSongAdd = async (hash, name, img, author) => {
     console.log('[PlayerControl] 从播放队列收到addSongToQueue事件:', name);
+    audio.pause();
+    playing.value = false;
     const result = await addSongToQueue(hash, name, img, author);
     if (result && result.song) {
         await playSong(result.song);
