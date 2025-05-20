@@ -112,12 +112,15 @@
 import { ref, onMounted, getCurrentInstance, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
+import { usePwaInstall } from '../composables/usePwaInstall';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
 const { proxy } = getCurrentInstance();
 const appVersion = ref('');
 const platform = ref('');
+
+const { deferredPrompt, isPwaInstalled, installPWA } = usePwaInstall();
 
 // 设置配置
 const selectedSettings = ref({
@@ -239,6 +242,12 @@ const settingSections = computed(() => [
                 label: t('quan-ju-kuai-jie-jian'),
                 customText: t('zi-ding-yi-kuai-jie-jian'),
                 action: openShortcutSettings
+            },
+            {
+                key: 'pwa',
+                label: t('pwa-app'),
+                customText: t('install'),
+                action: installPWA
             }
         ]
     }
