@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus';
 
 // 创建一个 axios 实例
 const httpClient = axios.create({
-    baseURL: 'http://127.0.0.1:6521',
+    baseURL: import.meta.env.VITE_APP_API_URL || 'http://127.0.0.1:6521',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',

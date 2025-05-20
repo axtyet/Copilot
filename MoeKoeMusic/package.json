@@ -6,6 +6,7 @@
     "install-all": "npm install && cd api && npm install",
     "serve": "vite",
     "build": "vite build",
+    "build:docker": "cross-env VITE_APP_API_URL=/api vite build",
     "preview": "vite preview",
     "electron:serve": "cross-env NODE_ENV=development electron .",
     "api": "node api/app.js",

@@ -64,7 +64,59 @@
 
 ## 📦️ 安装
 
+### 客户端安装
+
 访问本项目的 [Releases](https://github.com/iAJue/MoeKoeMusic/releases) 页面下载安装包。
+
+### WEB端安装（docker）
+
+* 注意：部署后请开放服务器对应端口才可使用，或者使用反向代理实现域名访问。
+
+> 方式一：自定义启动
+
+#### 随便创建一个目录
+
+```
+mkdir MoeKoeMusic
+```
+
+#### 进入目录
+
+```
+cd MoeKoeMusic
+```
+
+#### 下载docker-compose.yaml文件，或者手动下载放到MoeKoeMusic目录下
+
+```
+wget https://github.com/iAJue/MoeKoeMusic/blob/main/docker-compose.yml
+```
+
+> 可以根据需要修改里面的配置
+> 1.修改镜像版本号【可选】
+> 2.配置数据保存路径【可选】
+> 3.修改端口号【可选】
+
+```
+vi docker-compose.yaml # 【可选】
+```
+
+#### 启动MoeKoeMusic
+
+```
+docker compose up -d &
+```
+
+> ~~方式二：使用docker-compose一键安装 （镜像暂未上传官方）~~
+
+```
+docker run -d --name MoeKoeMusic -p 8080:8080 iajue/moekoe-music:latest
+```
+
+> 方式三：宝塔容器编排
+
+复制 https://github.com/iAJue/MoeKoeMusic/blob/main/docker-compose.yml 里面的内容，粘贴到宝塔面板的容器编排里面，点击部署即可，编排名称为MoeKoeMusic
+
 
 ## ⚙️ 开发
 

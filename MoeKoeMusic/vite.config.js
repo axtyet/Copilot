@@ -7,6 +7,7 @@ export default defineConfig({
   base: './',
   publicPath: './',
   server: {
+    host: true,
     port: 8080, // 将开发服务器端口设置为8080，确保与其他服务兼容
   },
   resolve: {
