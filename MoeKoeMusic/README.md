@@ -72,38 +72,11 @@
 
 * 注意：部署后请开放服务器对应端口才可使用，或者使用反向代理实现域名访问。
 
-> 方式一：自定义启动
-
-#### 随便创建一个目录
+> 方式一：快速启动（推荐）
 
 ```
-mkdir MoeKoeMusic
-```
-
-#### 进入目录
-
-```
+git clone https://github.com/iAJue/MoeKoeMusic.git
 cd MoeKoeMusic
-```
-
-#### 下载docker-compose.yaml文件，或者手动下载放到MoeKoeMusic目录下
-
-```
-wget https://github.com/iAJue/MoeKoeMusic/blob/main/docker-compose.yml
-```
-
-> 可以根据需要修改里面的配置
-> 1.修改镜像版本号【可选】
-> 2.配置数据保存路径【可选】
-> 3.修改端口号【可选】
-
-```
-vi docker-compose.yaml # 【可选】
-```
-
-#### 启动MoeKoeMusic
-
-```
 docker compose up -d &
 ```
 
@@ -115,36 +88,27 @@ docker run -d --name MoeKoeMusic -p 8080:8080 iajue/moekoe-music:latest
 
 > 方式三：宝塔容器编排
 
-复制 https://github.com/iAJue/MoeKoeMusic/blob/main/docker-compose.yml 里面的内容，粘贴到宝塔面板的容器编排里面，点击部署即可，编排名称为MoeKoeMusic
-
-
-> 方式四：本地docker编译
-
-**备注**：该方法可以在docker镜像版本落后时使用
-
-1. 下载源码
+远程镜像，版本可能会落后于官方
 
 ```
-git clone https://github.com/iAJue/MoeKoeMusic.git
-```
+version: '3.3'
 
-2. 进入目录
-
-```
-cd MoeKoeMusic
-```
-
-3. 打包
-
-```
-docker build -t moekoemusic:latest .
-```
-
-4. 启动MoeKoeMusic
+services:
+  moekoe-music:
+    # 镜像地址
+    image: registry.cn-wulanchabu.aliyuncs.com/youngxj/moekoe-music:latest
+    container_name: moekoe-music # 容器名
+    restart: unless-stopped # 自动重启
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: # 端口映射
+      - "8080:8080"  # 前端服务
+      - "6521:6521"  # 接口服务
 
 ```
-docker run -d --name MoeKoeMusic -p 8080:8080 moekoemusic:latest
-```
+
+复制内容上面的内容，粘贴到宝塔面板的容器编排里面，编排名称为MoeKoeMusic，点击部署即可。
 
 ## ⚙️ 开发
 

@@ -46,4 +46,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Command to run both services
 # API runs from /app/api directory, frontend served by Nginx
-CMD ["sh", "-c", "cd /app/api && node app.js & nginx -g 'daemon off;'"]
+# CMD ["sh", "-c", "cd /app/api && node app.js & nginx -g 'daemon off;'"]
+CMD sh -c "\
+  echo 'client running @ http://127.0.0.1:8080/'; \
+  cd /app/api && node app.js & nginx -g 'daemon off;'"

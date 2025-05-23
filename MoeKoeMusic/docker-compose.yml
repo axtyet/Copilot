@@ -2,8 +2,6 @@ version: '3.3'
 
 services:
   moekoe-music:
-    # 镜像地址
-    image: registry.cn-wulanchabu.aliyuncs.com/youngxj/moekoe-music:latest
     container_name: moekoe-music # 容器名
     restart: unless-stopped # 自动重启
     build:
