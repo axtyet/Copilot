@@ -640,14 +640,6 @@ const selectTrack = (index, event) => {
                 selectedTracks.value.push(i);
             }
         }
-    } else if (event.ctrlKey || event.metaKey) {
-        // Ctrl/Cmd 键选择性多选
-        const existingIndex = selectedTracks.value.indexOf(index);
-        if (existingIndex === -1) {
-            selectedTracks.value.push(index);
-        } else {
-            selectedTracks.value.splice(existingIndex, 1);
-        }
     } else {
         // 普通点击
         const existingIndex = selectedTracks.value.indexOf(index);

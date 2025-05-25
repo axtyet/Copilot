@@ -497,3 +497,48 @@
     color: #ff4081;
     opacity: 1;
 }
+
+.playback-speed {
+    position: relative;
+    display: inline-block;
+}
+
+.speed-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--background-color);
+    border: 1px solid var(--background-color);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.speed-option {
+    padding: 6px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--text-color);
+    transition: background-color 0.2s;
+}
+
+.speed-option:hover {
+    background-color: var(--secondary-color);
+}
+
+.speed-option.active {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+}
+
+.speed-menu::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--background-color);;
+}

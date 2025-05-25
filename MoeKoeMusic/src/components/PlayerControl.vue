@@ -34,6 +34,19 @@
             <div class="extra-controls">
                 <button class="extra-btn" title="桌面歌词" v-if="isElectron()" @click="desktopLyrics"><i
                         class="fas">词</i></button>
+                <div class="playback-speed">
+                    <button class="extra-btn" @click="toggleSpeedMenu" title="播放速度">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </button>
+                    <div v-if="showSpeedMenu" class="speed-menu">
+                        <div v-for="speed in playbackSpeeds" :key="speed" 
+                             class="speed-option" 
+                             :class="{ active: currentSpeed === speed }"
+                             @click="changePlaybackSpeed(speed)">
+                            {{ speed }}x
+                        </div>
+                    </div>
+                </div>
                 <button class="extra-btn" title="我喜欢" @click="playlistSelect.toLike()"><i
                         class="fas fa-heart"></i></button>
                 <button class="extra-btn" title="收藏至" @click="playlistSelect.fetchPlaylists()"><i
@@ -237,7 +250,7 @@ const updateCurrentTime = throttle(() => {
 
 // 初始化各个模块
 const audioController = useAudioController({ onSongEnd, updateCurrentTime });
-const { playing, isMuted, volume, changeVolume, audio } = audioController;
+const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate } = audioController;
 
 const lyricsHandler = useLyricsHandler(t);
 const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight } = lyricsHandler;
@@ -274,6 +287,7 @@ const playSong = async (song) => {
         lyricsData.value = [];
 
         audio.src = song.url;
+        setPlaybackRate(currentSpeed.value);
         console.log('[PlayerControl] 设置音频源:', song.url);
 
         try {
@@ -689,6 +703,22 @@ const endLyricsDrag = () => {
     console.log('[PlayerControl] 结束拖动歌词，设置最终进度:', tempTime.value);
 };
 
+const showSpeedMenu = ref(false);
+const currentSpeed = ref(1.0);
+const playbackSpeeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
+// 切换速度菜单
+const toggleSpeedMenu = () => {
+    showSpeedMenu.value = !showSpeedMenu.value;
+};
+
+// 改变播放速度
+const changePlaybackSpeed = (speed) => {
+    currentSpeed.value = speed;
+    setPlaybackRate(speed);
+    showSpeedMenu.value = false;
+};
+
 // 组件挂载
 onMounted(() => {
     console.log('[PlayerControl] 组件挂载');
@@ -744,6 +774,13 @@ onMounted(() => {
         audio.currentTime = savedProgress;
         console.log('[PlayerControl] 恢复播放进度:', savedProgress);
         progressWidth.value = (audio.currentTime / currentSong.value.timeLength) * 100;
+    }
+
+    // 恢复播放速度设置
+    const savedSpeed = localStorage.getItem('player_speed');
+    if (savedSpeed) {
+        currentSpeed.value = parseFloat(savedSpeed);
+        setPlaybackRate(currentSpeed.value);
     }
 
     // 获取VIP
