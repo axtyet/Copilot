@@ -112,15 +112,12 @@
 import { ref, onMounted, getCurrentInstance, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
-import { usePwaInstall } from '../composables/usePwaInstall';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
 const { proxy } = getCurrentInstance();
 const appVersion = ref('');
 const platform = ref('');
-
-const { deferredPrompt, isPwaInstalled, installPWA } = usePwaInstall();
 
 // 设置配置
 const selectedSettings = ref({
@@ -709,6 +706,30 @@ const openResetConfirmation = async () => {
         localStorage.clear();
         isElectron() && window.electron.ipcRenderer.send('clear-settings');
         window.$modal.alert('恢复出厂设置成功，重启生效');
+    }
+};
+
+let deferredPrompt;
+if(!isElectron()){
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+}
+
+const installPWA = async () => {
+    if(isElectron()){
+        window.$modal.alert('请在Web环境下安装');
+        return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('User accepted the PWA installation');
+        deferredPrompt = null;
+    } else {
+        console.log('User declined the PWA installation');
     }
 };
 </script>

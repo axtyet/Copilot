@@ -11,16 +11,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Disclaimer from '@/components/Disclaimer.vue';
 import TitleBar from '@/components/TitleBar.vue';
-import { usePwaInstall } from './composables/usePwaInstall';
 
 const route = useRoute();
 const isLyricsRoute = computed(() => route.path === '/lyrics');
 
 // 动态控制 TitleBar 的显示
 const showTitleBar = ref(true);
-
-// PWA 安装相关逻辑
-const { deferredPrompt, isPwaInstalled, installPWA } = usePwaInstall();
 
 onMounted(() => {
     const settings = JSON.parse(localStorage.getItem('settings')) || {};
