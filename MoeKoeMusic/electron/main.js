@@ -33,7 +33,7 @@ app.on('ready', () => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
-            if (process.platform === "darwin") createTouchBar(mainWindow);
+            if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
             playStartupSound();
             registerShortcut();
             setupAutoUpdater(mainWindow);

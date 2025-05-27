@@ -137,7 +137,8 @@ const selectedSettings = ref({
     highDpi: { displayText: t('guan-bi'), value: 'off' },
     qualityCompatibility: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
-    apiMode: { displayText: t('guan-bi'), value: 'off' }
+    apiMode: { displayText: t('guan-bi'), value: 'off' },
+    touchBar: { displayText: t('guan-bi'), value: 'off' }
 });
 
 // 设置分区配置
@@ -231,6 +232,12 @@ const settingSections = computed(() => [
             {
                 key: 'apiMode',
                 label: 'API模式',
+                showRefreshHint: true,
+                refreshHintText: t('zhong-qi-hou-sheng-xiao')
+            },
+            {
+                key: 'touchBar',
+                label: 'TouchBar',
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
@@ -379,6 +386,13 @@ const selectionTypeMap = {
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
+    },
+    touchBar: {
+        title: 'TouchBar',
+        options: [
+            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('guan-bi'), value: 'off' }
+        ]
     }
 };
 
@@ -388,7 +402,8 @@ const showRefreshHint = ref({
     lyricsFontSize: false,
     gpuAcceleration: false,
     highDpi: false,
-    font: false
+    font: false,
+    touchBar: false
 });
 
 const openSelection = (type) => {
@@ -405,9 +420,13 @@ const openSelection = (type) => {
 };
 
 const selectOption = (option) => {
-    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar'];
+    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
+        return;
+    }
+    if(selectionType.value == 'touchBar' && window.electron.platform != 'darwin'){
+        window.$modal.alert('非Mac设备不支持TouchBar');
         return;
     }
     selectedSettings.value[selectionType.value] = option;
@@ -445,7 +464,7 @@ const selectOption = (option) => {
     actions[selectionType.value]?.();
     saveSettings();
     if(selectionType.value != 'apiMode') closeSelection();
-    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode'];
+    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'touchBar'];
     if (refreshHintTypes.includes(selectionType.value)) {
         showRefreshHint.value[selectionType.value] = true;
     }

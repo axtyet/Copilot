@@ -240,7 +240,7 @@ const updateCurrentTime = throttle(() => {
                     duration: audio.duration
                 });
             }
-            if (window.navigator.platform.includes("Mac")) {
+            if (window.electron.platform == 'darwin' && savedConfig?.touchBar == 'on') {
                 const currentLine = getCurrentLineText(audio.currentTime);
                 window.electron.ipcRenderer.send(
                     "update-current-lyrics",
