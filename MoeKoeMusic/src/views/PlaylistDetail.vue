@@ -165,6 +165,7 @@ import { get } from '../utils/request';
 import { useRoute, useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
+import { share } from '@/utils/utils';
 
 const playlistSelect = ref(null);
 const { t } = useI18n();
@@ -573,8 +574,7 @@ const deletePlaylist = async () => {
 // 分享歌单
 const sharePlaylist = () => {
     isDropdownVisible.value = false;
-    navigator.clipboard.writeText(route.query.global_collection_id);
-    window.$modal.alert(t('yi-fu-zhi-fen-xiang-ma-qing-zai-moekoe-ke-hu-duan-zhong-fang-wen'));
+    share('share?listid='+route.query.global_collection_id);
 };
 
 // 右键菜单

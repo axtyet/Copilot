@@ -39,10 +39,8 @@
                         <i class="fas fa-tachometer-alt"></i>
                     </button>
                     <div v-if="showSpeedMenu" class="speed-menu">
-                        <div v-for="speed in playbackSpeeds" :key="speed" 
-                             class="speed-option" 
-                             :class="{ active: currentSpeed === speed }"
-                             @click="changePlaybackSpeed(speed)">
+                        <div v-for="speed in playbackSpeeds" :key="speed" class="speed-option"
+                            :class="{ active: currentSpeed === speed }" @click="changePlaybackSpeed(speed)">
                             {{ speed }}x
                         </div>
                     </div>
@@ -51,6 +49,8 @@
                         class="fas fa-heart"></i></button>
                 <button class="extra-btn" title="收藏至" @click="playlistSelect.fetchPlaylists()"><i
                         class="fas fa-add"></i></button>
+                <button class="extra-btn" title="分享歌曲" @click="share('share?hash=' + currentSong.hash)"><i
+                        class="fas fa-share"></i></button>
                 <button class="extra-btn" @click="togglePlaybackMode">
                     <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
                         :title="currentPlaybackMode.title"></i>
@@ -73,7 +73,8 @@
     </div>
 
     <!-- 播放队列 -->
-    <QueueList :current-song="currentSong" @add-song-to-queue="onQueueSongAdd" @add-cloud-music-to-queue="onQueueCloudSongAdd" ref="queueList" />
+    <QueueList :current-song="currentSong" @add-song-to-queue="onQueueSongAdd"
+        @add-cloud-music-to-queue="onQueueCloudSongAdd" ref="queueList" />
 
     <!-- 全屏歌词界面 -->
     <transition name="slide-up">
@@ -134,7 +135,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="lyrics-container" @wheel="handleLyricsWheel" @mousedown="startLyricsDrag" @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag">
+                <div id="lyrics-container" @wheel="handleLyricsWheel" @mousedown="startLyricsDrag"
+                    @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag">
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                         <div v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex" class="line">
@@ -161,6 +163,8 @@ import { useMusicQueueStore } from '../stores/musicQueue';
 import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
+import { useRouter } from 'vue-router';
+import { getCover, share } from '../utils/utils';
 
 // 从统一入口导入所有模块
 import {
@@ -177,6 +181,7 @@ import {
 const queueList = ref(null);
 const playlistSelect = ref(null);
 const { t } = useI18n();
+const router = useRouter();
 const musicQueueStore = useMusicQueueStore();
 const playlists = ref([]);
 const currentTime = ref(0);
@@ -292,7 +297,7 @@ const formattedDuration = computed(() => formatTime(currentSong.value?.timeLengt
 // 播放歌曲
 const playSong = async (song) => {
     clearAutoSwitchTimer();
-    
+
     try {
         console.log('[PlayerControl] 开始播放歌曲:', song.name);
 
@@ -413,7 +418,7 @@ const togglePlayPause = async () => {
 // 从队列中播放歌曲
 const playSongFromQueue = async (direction) => {
     clearAutoSwitchTimer();
-    
+
     if (musicQueueStore.queue.length === 0) {
         console.log('[PlayerControl] 队列为空');
         window.$modal.alert(t('ni-huan-mei-you-tian-jia-ge-quo-kuai-qu-tian-jia-ba'));
@@ -664,6 +669,27 @@ const setupMediaShortcuts = () => {
     window.electron.ipcRenderer.on('toggle-mute', toggleMute);
     window.electron.ipcRenderer.on('toggle-like', () => playlistSelect.value.toLike());
     window.electron.ipcRenderer.on('toggle-mode', togglePlaybackMode);
+    window.electron.ipcRenderer.on('url-params', (data) => {
+        console.log('[PlayerControl] 接收到URL参数:', data);
+
+        // 处理歌曲哈希参数
+        if (data.hash) {
+            console.log('[PlayerControl] 从URL启动播放歌曲:', data.hash);
+            songQueue.privilegeSong(data.hash).then(res => {
+                if (res.status == 1) {
+                    const songInfo = res.data[0];
+                    addSongToQueue(songInfo.hash, songInfo.albumname, getCover(songInfo.info.image, 480), songInfo.singername)
+                }
+            })
+        }else if (data.listid) {
+            // 处理歌单ID参数
+            console.log('[PlayerControl] 从URL启动跳转到歌单:', data.listid);
+            router.push({
+                path: '/PlaylistDetail',
+                query: { global_collection_id: data.listid }
+            });
+        }
+    });
 };
 
 // 切换静音
@@ -688,33 +714,33 @@ const tempTime = ref(0);
 // 开始拖动歌词
 const startLyricsDrag = (event) => {
     if (!audio.duration || !currentSong.value?.hash) return;
-    
+
     isDraggingLyrics.value = true;
     lyricsDragStartY.value = event.clientY;
     lyricsDragStartTime.value = audio.currentTime;
     tempTime.value = audio.currentTime;
-    
+
     console.log('[PlayerControl] 开始拖动歌词');
 };
 
 // 处理歌词拖动
 const handleLyricsDrag = (event) => {
     if (!isDraggingLyrics.value) return;
-    
+
     // 计算垂直移动距离
     const deltaY = event.clientY - lyricsDragStartY.value;
-    
+
     // 根据移动距离计算时间调整，向上拖动前进，向下拖动后退
     // 灵敏度因子：每移动100像素调整30秒
     const sensitivityFactor = 30 / 100;
     const timeAdjustment = -deltaY * sensitivityFactor;
-    
+
     // 计算新时间并确保在有效范围内
     tempTime.value = Math.max(0, Math.min(audio.duration, lyricsDragStartTime.value + timeAdjustment));
-    
+
     // 更新进度条显示
     progressWidth.value = (tempTime.value / audio.duration) * 100;
-    
+
     console.log(`[PlayerControl] 拖动歌词预览进度: ${tempTime.value.toFixed(2)}s / ${audio.duration.toFixed(2)}s`);
 };
 
@@ -840,7 +866,7 @@ onMounted(() => {
 onUnmounted(() => {
     // 清除自动切换定时器
     clearAutoSwitchTimer();
-    
+
     // 使用AudioController的销毁方法清理基本监听器
     audioController.destroy();
 
@@ -869,7 +895,7 @@ onUnmounted(() => {
 defineExpose({
     addSongToQueue: async (hash, name, img, author) => {
         clearAutoSwitchTimer();
-        
+
         console.log('[PlayerControl] 外部调用addSongToQueue:', name);
         audio.pause();
         playing.value = false;
@@ -917,7 +943,7 @@ defineExpose({
     addToNext,
     addCloudMusicToQueue: async (hash, name, author, timeLength) => {
         clearAutoSwitchTimer();
-        
+
         console.log('[PlayerControl] 外部调用addCloudMusicToQueue:', name);
         audio.pause();
         playing.value = false;
@@ -966,7 +992,7 @@ defineExpose({
 // 从播放队列接收事件
 const onQueueSongAdd = async (hash, name, img, author) => {
     clearAutoSwitchTimer();
-    
+
     console.log('[PlayerControl] 从播放队列收到addSongToQueue事件:', name);
     audio.pause();
     playing.value = false;
@@ -983,7 +1009,7 @@ const onQueueSongAdd = async (hash, name, img, author) => {
 
 const onQueueCloudSongAdd = async (hash, name, author, timeLength) => {
     clearAutoSwitchTimer();
-    
+
     console.log('[PlayerControl] 从播放队列收到addCloudMusicToQueue事件:', name);
     const result = await addCloudMusicToQueue(hash, name, author, timeLength);
     if (result && result.song) {
