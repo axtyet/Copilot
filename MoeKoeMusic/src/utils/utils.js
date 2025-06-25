@@ -49,7 +49,7 @@ export const applyColorTheme = (theme) => {
 
 export const getCover = (coverUrl, size) => {
     if (!coverUrl) return './assets/images/ico.png';
-    return coverUrl.replace("{size}", size);
+    return coverUrl.replace("{size}", size).replace('http://', 'https://').replace('c1.kgimg.com', 'imge.kugou.com');
 };
 
 export const getQuality = (hashs, data) => {

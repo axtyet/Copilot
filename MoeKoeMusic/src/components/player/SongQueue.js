@@ -68,7 +68,7 @@ export default function useSongQueue(t, musicQueueStore) {
                 id: musicQueueStore.queue.length + 1,
                 hash: hash,
                 name: name,
-                img: img,
+                img: img.replace('http://', 'https://'),
                 author: author,
                 timeLength: response.timeLength,
                 url: response.url[0].replace('http://', 'https://')
@@ -197,7 +197,7 @@ export default function useSongQueue(t, musicQueueStore) {
             id: musicQueueStore.queue.length + 1,
             hash: hash,
             name: name,
-            img: img,
+            img: img.replace('http://', 'https://'),
             author: author,
             timeLength: timeLength,
         });
@@ -206,7 +206,7 @@ export default function useSongQueue(t, musicQueueStore) {
             id: musicQueueStore.queue.length + 1,
             hash: hash,
             name: name,
-            img: img,
+            img: img.replace('http://', 'https://'),
             author: author,
             timeLength: timeLength,
         });
@@ -249,7 +249,7 @@ export default function useSongQueue(t, musicQueueStore) {
                 id: songs.length + index + 1,
                 hash: song.hash,
                 name: song.name,
-                img: song.cover?.replace("{size}", 480) || './assets/images/ico.png',
+                img: song.cover?.replace("{size}", 480).replace('http://', 'https://') || './assets/images/ico.png',
                 author: song.author,
                 timeLength: song.timelen
             };
