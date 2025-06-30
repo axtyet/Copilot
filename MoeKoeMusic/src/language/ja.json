@@ -192,5 +192,6 @@
   "tian-jia-wo-xi-huan": "私のお気に入りに追加してください",
   "qie-huan-bo-fang-mo-shi": "再生モードを切り替えます",
   "pwa-app": "PWA アプリケーション",
-  "install": "インストール"
+  "install": "インストール",
+  "yin-pin-jia-zai-shi-bai": "音楽のロードに失敗しました"
 }
