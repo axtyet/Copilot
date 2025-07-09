@@ -135,6 +135,22 @@ npm run test
 - **test**: 添加或更新测试
 - **chore**: 构建过程或辅助工具的变动
 
+另外我们也接受 **Gitmoji** 的提交风格:
+
+| 类型       | Emoji                | 示例 commit                   |
+| -------- | -------------------- | --------------------------- |
+| ✨ 功能     | `:sparkles:`         | `✨ feat: 添加歌词搜索功能`          |
+| 🐛 修复    | `:bug:`              | `🐛 fix: 修复歌词无法加载的问题`       |
+| 📝 文档    | `:memo:`             | `📝 docs: 更新 README 添加歌词说明` |
+| ♻️ 重构    | `:recycle:`          | `♻️ refactor: 简化播放组件逻辑`     |
+| ✅ 测试     | `:white_check_mark:` | `✅ test: 增加播放器单元测试`         |
+| 🎨 格式    | `:art:`              | `🎨 style: 调整代码缩进统一风格`      |
+| 🚀 部署    | `:rocket:`           | `🚀 chore: 发布 1.0.0 版本`     |
+| 🔥 删除    | `:fire:`             | `🔥 chore: 移除冗余组件`          |
+| ⬆️ 升级    | `:arrow_up:`         | `⬆️ chore: 升级 vue 到 3.4`    |
+| 💄 UI 修改 | `:lipstick:`         | `💄 style: 优化播放器界面样式`       |
+| 💥 破坏性变更 | `:boom:`             | `💥 feat!: 改变歌词引擎逻辑`        |
+
 ## Pull Request流程
 
 1. 确保您的Pull Request（PR）有一个清晰的标题和描述
