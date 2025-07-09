@@ -165,7 +165,6 @@ import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
 import { useRouter } from 'vue-router';
 import { getCover, share } from '../utils/utils';
-import { get } from '../utils/request';
 
 // 从统一入口导入所有模块
 import {
@@ -769,12 +768,6 @@ const changePlaybackSpeed = (speed) => {
     showSpeedMenu.value = false;
 };
 
- // 获取歌曲详情
- const getMusicInfo = async (hash) => {
-    const response = await get(`/song/url`,{hash:hash,free_part:1});
-    return response;
-}
-
 // 组件挂载
 onMounted(() => {
     console.log('[PlayerControl] 组件挂载');
@@ -861,25 +854,11 @@ onMounted(() => {
         }
     });
 
-    let retryCount = 0;
-    const maxRetries = 3;// 最大重试次数
     audio.addEventListener('error', (e) => {
-        let currentSongHash = currentSong.value.hash
-        if (retryCount < maxRetries && currentSongHash) {
-            // 重新请求歌曲信息并重载
-            getMusicInfo(currentSongHash).then(res => {
-                if(res.backupUrl[0]){
-                    currentSong.value.url = res.backupUrl[0];
-                    console.log('[PlayerControl] 重新获取音频地址:', currentSong.value.url);
-                    // 保存当前歌曲到本地存储，刷新存储数据
-                    localStorage.setItem('current_song', JSON.stringify(currentSong.value));
-                    audio.src = currentSong.value.url;
-                    audio.load();
-                }
-                retryCount++;
-            })
-        } else {
-            console.error('[PlayerControl] 音频错误:', e);
+        console.error('[PlayerControl] 音频错误:', e);
+        if(audio.error?.code == 4){
+            addSongToQueue(currentSong.value.hash, currentSong.value.name, currentSong.value.img, currentSong.value.author);
+        }else{
             window.$modal.alert(t('yin-pin-jia-zai-shi-bai'));
         }
     });
