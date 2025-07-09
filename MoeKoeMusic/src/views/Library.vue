@@ -20,7 +20,7 @@
                             <div class="stat-item"><span class="stat-value">{{ userDetail.follows || 0 }}</span><span class="stat-label">{{ $t('guan-zhu') }}</span></div>
                             <div class="stat-item"><span class="stat-value">{{ userDetail.fans || 0 }}</span><span class="stat-label">{{ $t('fen-si') }}</span></div>
                             <div class="stat-item"><span class="stat-value">{{ userDetail.friends || 0 }}</span><span class="stat-label">{{ $t('hao-you') }}</span></div>
-                            <div class="stat-item"><span class="stat-value">{{ userDetail.visitors || 0 }}</span><span class="stat-label">{{ $t('fang-wen') }}</span></div>
+                            <div class="stat-item"><span class="stat-value">{{ userDetail.hvisitors || 0 }}</span><span class="stat-label">{{ $t('fang-wen') }}</span></div>
                         </div>
                         <div class="user-meta">
                             <span class="user-gender">
