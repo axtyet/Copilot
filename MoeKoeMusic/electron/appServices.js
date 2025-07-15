@@ -25,11 +25,29 @@ export function createWindow() {
     const windowWidth = Math.min(1200, screenWidth * 0.8);
     const windowHeight = Math.min(938, screenHeight * 0.9);
     const lastWindowState = store.get('windowState') || {};
+    
+    let x = lastWindowState.x;
+    let y = lastWindowState.y;
+    let width = lastWindowState.width || windowWidth;
+    let height = lastWindowState.height || windowHeight;
+    
+    width = Math.min(width, screenWidth);
+    height = Math.min(height, screenHeight);
+    
+    const isValidPosition = x !== undefined && y !== undefined && 
+                           x >= 0 && x <= screenWidth && 
+                           y >= 0 && y <= screenHeight;
+    
+    if (!isValidPosition) {
+        x = Math.floor((screenWidth - width) / 2);
+        y = Math.floor((screenHeight - height) / 2);
+    }
+    
     mainWindow = new BrowserWindow({
-        width: lastWindowState.width || windowWidth,
-        height: lastWindowState.height || windowHeight,
-        x: lastWindowState.x || Math.floor((screenWidth - windowWidth) / 2),
-        y: lastWindowState.y || Math.floor((screenHeight - windowHeight) / 2),
+        width: width,
+        height: height,
+        x: x,
+        y: y,
         minWidth: 890,
         minHeight: 750,
         show: savedConfig?.startMinimized === 'on' ? false : true,
