@@ -102,6 +102,11 @@ export function createWindow() {
     });
 
     mainWindow.on('close', (event) => {
+        const savedConfig = store.get('settings');
+        if(savedConfig?.minimizeToTray === 'off'){
+            app.isQuitting = true;
+            app.quit();
+        }
         if (!app.isQuitting) {
             event.preventDefault();
             mainWindow.hide();
