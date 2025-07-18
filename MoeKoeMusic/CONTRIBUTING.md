@@ -137,19 +137,27 @@ npm run test
 
 另外我们也接受 **Gitmoji** 的提交风格:
 
-| 类型       | Emoji                | 示例 commit                   |
-| -------- | -------------------- | --------------------------- |
-| ✨ 功能     | `:sparkles:`         | `✨ feat: 添加歌词搜索功能`          |
-| 🐛 修复    | `:bug:`              | `🐛 fix: 修复歌词无法加载的问题`       |
-| 📝 文档    | `:memo:`             | `📝 docs: 更新 README 添加歌词说明` |
-| ♻️ 重构    | `:recycle:`          | `♻️ refactor: 简化播放组件逻辑`     |
-| ✅ 测试     | `:white_check_mark:` | `✅ test: 增加播放器单元测试`         |
-| 🎨 格式    | `:art:`              | `🎨 style: 调整代码缩进统一风格`      |
-| 🚀 部署    | `:rocket:`           | `🚀 chore: 发布 1.0.0 版本`     |
-| 🔥 删除    | `:fire:`             | `🔥 chore: 移除冗余组件`          |
-| ⬆️ 升级    | `:arrow_up:`         | `⬆️ chore: 升级 vue 到 3.4`    |
-| 💄 UI 修改 | `:lipstick:`         | `💄 style: 优化播放器界面样式`       |
-| 💥 破坏性变更 | `:boom:`             | `💥 feat!: 改变歌词引擎逻辑`        |
+| Emoji | 类型          | 说明                    | 示例                                    |
+| ----- | ------------ | ----------------------- | ---------------------------------------- |
+| ✨    | `feat`       | 新功能（Feature）         | `✨ feat: 添加搜索功能`                |
+| 🐛    | `fix`        | 修复 Bug                 | `🐛 fix: 修复登录时闪退的问题`          |
+| ♻️    | `refactor`   | 代码重构（非功能性更改）   | `♻️ refactor: 重构用户模块代码结构`    |
+| 📝    | `docs`       | 修改文档                 | `📝 docs: 更新 README 安装说明`         |
+| 🎨    | `style`      | 格式/排版修改（不影响代码逻辑） | `🎨 style: 调整代码缩进和格式`    |
+| ✅    | `test`       | 添加或修改测试代码         | `✅ test: 添加用户服务单元测试`        |
+| 🚀    | `perf`       | 性能优化                 | `🚀 perf: 提升图片加载速度`              |
+| 🔧    | `chore`      | 构建配置/脚本/依赖等杂项   | `🔧 chore: 更新依赖包`                 |
+| 🔥    | `remove`     | 删除无用代码或文件         | `🔥 remove: 删除未使用的组件`           |
+| 📦    | `build`      | 打包相关改动（构建、CI）    | `📦 build: 配置打包输出目录`          |
+| 🔀    | `merge`      | 合并分支                 | `🔀 merge: 合并 dev 分支`               |
+| 🚧    | `wip`        | 开发中（Work In Progress） | `🚧 wip: 正在实现订单详情页面`         |
+| ⬆️    | `upgrade`    | 升级依赖                 | `⬆️ upgrade: 升级 Electron 到 v28`       |
+| ⬇️    | `downgrade`  | 降级依赖                 | `⬇️ downgrade: 降级 vue-router 到 v4.0.0`|
+| 🐳    | `docker`     | 与 Docker 相关的更改      | `🐳 docker: 添加 Dockerfile`            |
+| 💄    | `ui`         | 修改 UI 或样式           | `💄 ui: 优化按钮样式`                     |
+| 💥    | `breaking`   | 破坏性更新（需注意兼容）    | `💥 breaking: 移除旧版 API`            |
+| 📈    | `analytics`  | 数据分析或埋点代码         | `📈 analytics: 添加页面浏览统计`        |
+| 🔖	  | `release`	  | 正式发布一个版本          |	`🔖 release: v1.2.0`                   |
 
 ## Pull Request流程
 

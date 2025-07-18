@@ -134,16 +134,23 @@ export function createLyricsWindow() {
         x: Math.floor((screenWidth - windowWidth) / 2),
         y: screenHeight - windowHeight
     };
+    
+    const savedLyricsSize = store.get('lyricsWindowSize') || {
+        width: windowWidth,
+        height: windowHeight
+    };
 
     lyricsWindow = new BrowserWindow({
-        width: windowWidth,
-        height: windowHeight,
+        width: savedLyricsSize.width,
+        height: savedLyricsSize.height,
         x: savedLyricsPosition.x,
         y: savedLyricsPosition.y,
+        minWidth: 800,
+        minHeight: 200,
         alwaysOnTop: true,
         frame: false,
         transparent: true,
-        resizable: false,
+        resizable: true,
         skipTaskbar: true,
         hasShadow: false,
         webPreferences: {
@@ -155,6 +162,11 @@ export function createLyricsWindow() {
             backgroundThrottling: false,
             zoomFactor: 1.0
         }
+    });
+    
+    lyricsWindow.on('resize', () => {
+        const [width, height] = lyricsWindow.getSize();
+        store.set('lyricsWindowSize', { width, height });
     });
     mainWindow.lyricsWindow = lyricsWindow;
     lyricsWindow.on('closed', () => {
@@ -421,6 +433,7 @@ export function startApiServer() {
 
         apiProcess.stderr.on('data', (data) => {
             log.error(`API 错误: ${data}`);
+            reject(data);
         });
 
         apiProcess.on('close', (code) => {
