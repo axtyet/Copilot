@@ -552,9 +552,21 @@ const handleRandomPlayback = (direction, currentIndex) => {
     } else if (direction === 'previous') {
         // 向前随机一首新歌曲
         let newIndex;
+        let attempts = 0;
+        const maxAttempts = musicQueueStore.queue.length * 2; // 防止死循环
+        
         do {
             newIndex = Math.floor(Math.random() * musicQueueStore.queue.length);
-        } while (playedSongsStack.value.length > 0 && newIndex === playedSongsStack.value[currentStackIndex.value]);
+            attempts++;
+            
+            // 如果尝试次数过多，直接返回
+            if (attempts >= maxAttempts) {
+                break;
+            }
+        } while (playedSongsStack.value.length > 0 && 
+                 (newIndex === playedSongsStack.value[currentStackIndex.value] ||
+                  (musicQueueStore.queue.length >= 10 && playedSongsStack.value.length > 0 && 
+                   playedSongsStack.value.slice(-Math.min(10, playedSongsStack.value.length)).includes(newIndex))));
 
         playedSongsStack.value.unshift(newIndex);
         return newIndex;
@@ -565,9 +577,21 @@ const handleRandomPlayback = (direction, currentIndex) => {
     } else if (direction === 'next') {
         // 随机一首新歌曲
         let newIndex;
+        let attempts = 0;
+        const maxAttempts = musicQueueStore.queue.length * 2; // 防止死循环
+        
         do {
             newIndex = Math.floor(Math.random() * musicQueueStore.queue.length);
-        } while (playedSongsStack.value.length > 0 && newIndex === playedSongsStack.value[currentStackIndex.value]);
+            attempts++;
+            
+            // 如果尝试次数过多，直接返回
+            if (attempts >= maxAttempts) {
+                break;
+            }
+        } while (playedSongsStack.value.length > 0 && 
+                 (newIndex === playedSongsStack.value[currentStackIndex.value] ||
+                  (musicQueueStore.queue.length >= 10 && playedSongsStack.value.length > 0 && 
+                   playedSongsStack.value.slice(-Math.min(10, playedSongsStack.value.length)).includes(newIndex))));
 
         // 截断未来的历史记录
         if (currentStackIndex.value < playedSongsStack.value.length - 1) {

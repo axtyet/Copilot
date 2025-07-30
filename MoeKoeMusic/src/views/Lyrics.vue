@@ -349,28 +349,56 @@ const getLineHighlightStyle = (lineIndex) => {
     const characters = line.characters;
     const text = line.text || '';
     
-    // 计算当前高亮的字符位置
-    let highlightPosition = 0;
-    let totalWidth = 100;
+    // 获取整行的时间范围
+    const lineStartTime = characters[0].startTime;
+    const lineEndTime = characters[characters.length - 1].endTime;
+    const lineDuration = lineEndTime - lineStartTime;
     
+    // 如果当前时间还没到这一行，不高亮
+    if (currentTime.value < lineStartTime) {
+        return { color: defaultColor.value };
+    }
+    
+    // 如果当前时间已经超过这一行的结束时间，完全高亮
+    if (currentTime.value >= lineEndTime) {
+        return {
+            background: `linear-gradient(to right, ${highlightColor.value} 0%, ${highlightColor.value} 100%)`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+            fontWeight: 'bold',
+        };
+    }
+    
+    // 计算基于字符时间的高亮位置
+    let charBasedPosition = 0;
     for (let i = 0; i < characters.length; i++) {
         const char = characters[i];
         const startTime = char.startTime;
         const endTime = char.endTime;
         
-        // 如果当前时间在这个字符的时间范围内
         if (currentTime.value >= startTime && currentTime.value <= endTime) {
             const progress = (currentTime.value - startTime) / (endTime - startTime);
             const charWidth = 1 / text.length * 100;
-            highlightPosition = (i / text.length * 100) + (progress * charWidth);
+            charBasedPosition = (i / text.length * 100) + (progress * charWidth);
             break;
         }
         
-        // 如果已经过了这个字符的时间
         if (currentTime.value > endTime) {
-            highlightPosition = (i + 1) / text.length * 100;
+            charBasedPosition = (i + 1) / text.length * 100;
         }
     }
+    
+    // 计算基于整行时间的高亮位置（作为补偿机制）
+    const lineProgress = (currentTime.value - lineStartTime) / lineDuration;
+    const lineBasedPosition = Math.min(100, lineProgress * 100);
+    
+    // 使用两种计算方式中较大的值，确保高亮不会太慢
+    let highlightPosition = Math.max(charBasedPosition, lineBasedPosition);
+    
+    // 确保高亮位置在合理范围内
+    highlightPosition = Math.max(0, Math.min(100, highlightPosition));
     
     return {
         background: `linear-gradient(to right, ${highlightColor.value} ${highlightPosition}%, ${defaultColor.value} ${highlightPosition}%)`,
