@@ -389,6 +389,18 @@ const getVip = async () => {
     transition: background-image 1s ease-in-out;
 }
 
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border-radius: 15px;
+    z-index: 1;
+}
+
 .profile-info {
     display: flex;
     align-items: flex-end;

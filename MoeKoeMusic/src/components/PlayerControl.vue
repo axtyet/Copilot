@@ -408,7 +408,7 @@ const togglePlayPause = async () => {
                     audio.src = song.url;
                 } else if (song.isCloud) {
                     console.log('[PlayerControl] 云音乐没有URL，重新获取');
-                    addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength);
+                    addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength, song.img);
                     return;
                 } else {
                     console.log('[PlayerControl] 歌曲没有URL，重新获取');
@@ -509,6 +509,7 @@ const playSongFromQueue = async (direction) => {
                 targetSong.name,
                 targetSong.author,
                 targetSong.timeLength,
+                targetSong.img,
                 false // 不重置播放位置，只获取URL
             );
         } else {
@@ -952,13 +953,13 @@ defineExpose({
         return songs;
     },
     addToNext,
-    addCloudMusicToQueue: async (hash, name, author, timeLength) => {
+    addCloudMusicToQueue: async (hash, name, author, timeLength, cover) => {
         clearAutoSwitchTimer();
 
         console.log('[PlayerControl] 外部调用addCloudMusicToQueue:', name);
         audio.pause();
         playing.value = false;
-        const result = await addCloudMusicToQueue(hash, name, author, timeLength);
+        const result = await addCloudMusicToQueue(hash, name, author, timeLength, cover);
         if (result && result.song) {
             await playSong(result.song);
         } else if (result && result.shouldPlayNext) {
@@ -989,6 +990,7 @@ defineExpose({
                 queueSongs[songIndex].name,
                 queueSongs[songIndex].author,
                 queueSongs[songIndex].timeLength,
+                queueSongs[songIndex].cover,
                 true
             );
             if (result && result.song) {
@@ -1018,11 +1020,11 @@ const onQueueSongAdd = async (hash, name, img, author) => {
     }
 };
 
-const onQueueCloudSongAdd = async (hash, name, author, timeLength) => {
+const onQueueCloudSongAdd = async (hash, name, author, timeLength, cover) => {
     clearAutoSwitchTimer();
 
     console.log('[PlayerControl] 从播放队列收到addCloudMusicToQueue事件:', name);
-    const result = await addCloudMusicToQueue(hash, name, author, timeLength);
+    const result = await addCloudMusicToQueue(hash, name, author, timeLength, cover);
     if (result && result.song) {
         await playSong(result.song);
     } else if (result && result.shouldPlayNext) {
