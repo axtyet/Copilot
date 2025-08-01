@@ -122,7 +122,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
-import { ElMessage } from 'element-plus';
 import { get } from '../utils/request';
 import { useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
@@ -233,7 +232,7 @@ const fetchCloudTracks = async () => {
             }
         }
     } catch (error) {
-        ElMessage.error(t('ge-qu-shu-ju-cuo-wu'));
+        $message.error(t('ge-qu-shu-ju-cuo-wu'));
         console.error('获取云盘歌曲失败:', error);
     } finally {
         loading.value = false;
@@ -341,7 +340,7 @@ const addPlaylistToQueue = async (event, append = false) => {
 };
 
 const uploadMusic = () => {
-    ElMessage.info('上传功能正在开发中...');
+    $message.info('上传功能正在开发中...');
 };
 
 // 滚动到当前播放歌曲
@@ -429,7 +428,7 @@ const appendSelectedToQueue = async () => {
     if (selectedTracks.value.length === 0) return;
     const selectedSongs = selectedTracks.value.map(index => filteredTracks.value[index]);
     await props.playerControl.addCloudPlaylistToQueue(selectedSongs, true);
-    ElMessage.success(t('tian-jia-dao-bo-fang-lie-biao-cheng-gong'));
+    $message.success(t('tian-jia-dao-bo-fang-lie-biao-cheng-gong'));
     isBatchMenuVisible.value = false;
 };
 
@@ -438,7 +437,7 @@ const deleteSelectedFromCloud = async () => {
     if (selectedTracks.value.length === 0) return;
     const result = await window.$modal.confirm(t('que-ren-shan-chu-yun-pan-ge-qu'));
     if (result) {
-        ElMessage.info('删除功能正在开发中...');
+        $message.info('删除功能正在开发中...');
         
         // selectedTracks.value.sort((a, b) => b - a).forEach(index => {
         //     filteredTracks.value.splice(index, 1);
@@ -448,7 +447,7 @@ const deleteSelectedFromCloud = async () => {
         // });
         // filteredTracks.value = [...tracks.value];
         // selectedTracks.value = [];
-        // ElMessage.success(t('shan-chu-cheng-gong'));
+        // $message.success(t('shan-chu-cheng-gong'));
     }
     isBatchMenuVisible.value = false;
 };
