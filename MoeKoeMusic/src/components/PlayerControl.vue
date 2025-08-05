@@ -81,8 +81,13 @@
         <div v-if="showLyrics" class="lyrics-bg"
             :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg.php'})` }) : ({ background: 'var(--secondary-color)' }))">
             <div class="lyrics-screen">
-                <div class="close-btn">
-                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
+                <div class="lyrics-controls">
+                    <div class="close-btn">
+                        <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
+                    </div>
+                    <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? '切换到音译' : '切换到翻译'">
+                        <i class="fas fa-language"></i>
+                    </div>
                 </div>
 
                 <div class="left-section">
@@ -144,7 +149,8 @@
                                     {{ charData.char }}
                                 </span>
                             </div>
-                            <div class="line translated" :class="{ [lyricsAlign]: true }" v-show="lineData.translated">{{ lineData.translated }}</div>
+                            <div class="line translated" :class="{ [lyricsAlign]: true }" v-show="lineData.translated && lyricsMode === 'translation'">{{ lineData.translated }}</div>
+                            <div class="line romanized" :class="{ [lyricsAlign]: true }" v-show="lineData.romanized && lyricsMode === 'romanization'">{{ lineData.romanized }}</div>
                         </div>
                     </div>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>
@@ -269,7 +275,7 @@ const audioController = useAudioController({ onSongEnd, updateCurrentTime });
 const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate } = audioController;
 
 const lyricsHandler = useLyricsHandler(t);
-const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine } = lyricsHandler;
+const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;
 
 const progressBar = useProgressBar(audio, resetLyricsHighlight);
 const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;
@@ -331,13 +337,25 @@ const restoreLyricsScroll = throttle(() => {
 
 // 获取歌词的节流函数
 const getCurrentLyrics = throttle(() => {
-    const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
-    if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig);
+    if (currentSong.value.hash) getLyrics(currentSong.value.hash);
 }, 1000);
 
 // 计算属性
 const formattedCurrentTime = computed(() => formatTime(currentTime.value));
 const formattedDuration = computed(() => formatTime(currentSong.value?.timeLength || 0));
+
+// 判断是否有多种歌词模式（同时有翻译和音译）
+const hasMultiLyricsMode = computed(() => {
+    if (!lyricsData.value || lyricsData.value.length === 0) return false;
+    
+    // 检查是否至少有一行同时包含翻译和音译
+    return lyricsData.value.some(line => line.translated && line.romanized);
+});
+
+// 切换歌词显示模式（翻译/音译）
+const switchLyricsMode = () => {
+    toggleLyricsMode();
+};
 
 // 播放歌曲
 const playSong = async (song) => {
