@@ -81,13 +81,11 @@
         <div v-if="showLyrics" class="lyrics-bg"
             :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg.php'})` }) : ({ background: 'var(--secondary-color)' }))">
             <div class="lyrics-screen">
-                <div class="lyrics-controls">
-                    <div class="close-btn">
-                        <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
-                    </div>
-                    <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? '切换到音译' : '切换到翻译'">
-                        <i class="fas fa-language"></i>
-                    </div>
+                <div class="close-btn">
+                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
+                </div>
+                <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? '切换到音译' : '切换到翻译'">
+                    <i class="fas fa-language"></i>
                 </div>
 
                 <div class="left-section">
