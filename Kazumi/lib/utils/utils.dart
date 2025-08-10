@@ -220,7 +220,7 @@ class Utils {
   // 版本对比
   static bool needUpdate(localVersion, remoteVersion) {
     List<String> localVersionList = localVersion.split('.');
-    List<String> remoteVersionList = remoteVersion.split('v')[1].split('.');
+    List<String> remoteVersionList = remoteVersion.split('.');
     for (int i = 0; i < localVersionList.length; i++) {
       int localVersion = int.parse(localVersionList[i]);
       int remoteVersion = int.parse(remoteVersionList[i]);
@@ -521,5 +521,24 @@ class Utils {
     var bytes = utf8.encode(data);
     var digest = sha256.convert(bytes);
     return base64Encode(digest.bytes);
+  }
+
+
+  /// 格式化日期
+  /// eg: 2025-07-27T09:14:12Z -> 2025-07-27
+  static String formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  /// 计算文件的 SHA256 哈希值
+  static Future<String> calculateFileHash(File file) async {
+    final bytes = await file.readAsBytes();
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 }
