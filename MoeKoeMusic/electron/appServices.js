@@ -214,8 +214,8 @@ export function createTray(mainWindow, title = '') {
         return tray;
     }
     const trayIconPath = isDev
-        ? (process.platform === 'win32' ? path.join(__dirname, '../build/icons/tray-icon.ico') : path.join(__dirname, '../build/icons/tray-icon.png'))
-        : ((process.platform === 'win32') ? path.join(process.resourcesPath, 'icons', 'tray-icon.ico') : path.join(process.resourcesPath, 'icons', 'tray-icon.png'));
+        ? (process.platform !== 'darwin' ? path.join(__dirname, '../build/icons/tray-icon.ico') : path.join(__dirname, '../build/icons/tray-icon.png'))
+        : ((process.platform !== 'darwin') ? path.join(process.resourcesPath, 'icons', 'tray-icon.ico') : path.join(process.resourcesPath, 'icons', 'tray-icon.png'));
 
     tray = new Tray(trayIconPath);
     tray.setToolTip('MoeKoe Music');
