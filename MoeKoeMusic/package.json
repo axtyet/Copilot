@@ -140,7 +140,7 @@
   },
   "blog": "MoeJue.cn",
   "license": "MIT",
-  "description": "An open-source KuGou third-party music client",
+  "description": "MoeKoe Music",
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
     "@vue/compiler-sfc": "^3.5.12",

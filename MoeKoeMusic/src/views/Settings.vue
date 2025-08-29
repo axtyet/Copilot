@@ -164,6 +164,7 @@ const selectedSettings = ref({
     autoStart: { displayText: t('guan-bi'), value: 'off' },
     startMinimized: { displayText: t('guan-bi'), value: 'off' },
     preventAppSuspension: { displayText: t('guan-bi'), value: 'off' },
+    networkMode: { displayText: '主网', value: 'mainnet' },
 });
 
 // 设置分区配置
@@ -267,6 +268,12 @@ const settingSections = computed(() => [
             {
                 key: 'autoStart',
                 label: '开机自启动'
+            },
+            {
+                key: 'networkMode',
+                label: '网络环境',
+                showRefreshHint: true,
+                refreshHintText: '重启后生效'
             },
             {
                 key: 'startMinimized',
@@ -517,6 +524,14 @@ const selectionTypeMap = {
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
+    },
+    networkMode: {
+        title: '网络节点',
+        options: [
+            { displayText: '主网', value: 'mainnet' },
+            { displayText: '测试网', value: 'testnet' },
+            { displayText: '开发网', value: 'devnet' }
+        ]
     }
 };
 
@@ -529,7 +544,8 @@ const showRefreshHint = ref({
     highDpi: false,
     font: false,
     touchBar: false,
-    preventAppSuspension: false
+    preventAppSuspension: false,
+    networkMode: false
 });
 
 const openSelection = (type) => {
@@ -546,7 +562,7 @@ const openSelection = (type) => {
 };
 
 const selectOption = (option) => {
-    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart', 'startMinimized', 'preventAppSuspension'];
+    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart', 'startMinimized', 'preventAppSuspension', 'networkMode'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
         return;
@@ -588,12 +604,15 @@ const selectOption = (option) => {
         },
         'preventAppSuspension': () => {
             showRefreshHint.value.preventAppSuspension = true;
+        },
+        'networkMode': () => {
+            showRefreshHint.value.networkMode = true;
         }
     };
     actions[selectionType.value]?.();
     saveSettings();
     if(selectionType.value != 'apiMode') closeSelection();
-    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'touchBar', 'preventAppSuspension'];
+    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'touchBar', 'preventAppSuspension', 'networkMode'];
     if (refreshHintTypes.includes(selectionType.value)) {
         showRefreshHint.value[selectionType.value] = true;
     }
@@ -889,7 +908,7 @@ const installPWA = async () => {
     overflow: hidden;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    margin-bottom: -150px;
+    margin-bottom: -80px;
 }
 
 .settings-sidebar {

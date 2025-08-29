@@ -75,7 +75,13 @@ export function createWindow() {
         mainWindow.loadURL('http://localhost:8080');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        if(savedConfig?.networkMode == 'devnet'){ //开发网
+            mainWindow.loadURL('http://localhost:8080');
+        }else if(savedConfig?.networkMode == 'testnet'){ //测试网
+            mainWindow.loadURL('https://app.testnet.music.moekoe.cn');
+        }else{ //主网
+            mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        }
     }
 
     mainWindow.webContents.on('dom-ready', () => {
@@ -130,21 +136,37 @@ export function createLyricsWindow() {
     const windowWidth = Math.floor(screenWidth * 0.7);
     const windowHeight = 200;
 
-    const savedLyricsPosition = store.get('lyricsWindowPosition') || {
-        x: Math.floor((screenWidth - windowWidth) / 2),
-        y: screenHeight - windowHeight
-    };
-    
+    const savedLyricsPosition = store.get('lyricsWindowPosition') || {};
     const savedLyricsSize = store.get('lyricsWindowSize') || {
         width: windowWidth,
         height: windowHeight
     };
+    
+    let x = savedLyricsPosition.x;
+    let y = savedLyricsPosition.y;
+    let width = savedLyricsSize.width || windowWidth;
+    let height = savedLyricsSize.height || windowHeight;
+    
+    // 限制窗口尺寸不超过屏幕
+    width = Math.min(width, screenWidth);
+    height = Math.min(height, screenHeight);
+    
+    // 检查位置是否有效
+    const isValidPosition = x !== undefined && y !== undefined && 
+                           x >= 0 && x <= screenWidth && 
+                           y >= 0 && y <= screenHeight;
+    
+    // 如果位置无效，设置默认位置
+    if (!isValidPosition) {
+        x = Math.floor((screenWidth - width) / 2);
+        y = screenHeight - height;
+    }
 
     lyricsWindow = new BrowserWindow({
-        width: savedLyricsSize.width,
-        height: savedLyricsSize.height,
-        x: savedLyricsPosition.x,
-        y: savedLyricsPosition.y,
+        width: width,
+        height: height,
+        x: x,
+        y: y,
         minWidth: 800,
         minHeight: 200,
         alwaysOnTop: true,
@@ -181,23 +203,7 @@ export function createLyricsWindow() {
         });
     }
 
-    // 监听窗口移动事件，限制窗口位置
-    // let moveTimer;
-    // lyricsWindow.on('move', () => {
-    //     if (moveTimer) return;
-    //     moveTimer = setTimeout(() => {
-    //         const bounds = lyricsWindow.getBounds();
-    //         const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-    //         if (bounds.y + bounds.height > screenHeight) {
-    //             lyricsWindow.setPosition(bounds.x, screenHeight - bounds.height);
-    //         }
-    //         if (bounds.y < 0) {
-    //             lyricsWindow.setPosition(bounds.x, 0);
-    //         }
-    //         clearTimeout(moveTimer);
-    //         moveTimer = null;
-    //     }, 3000);
-    // });
+
 
     // 设置窗口置顶级别
     lyricsWindow.setAlwaysOnTop(true, 'screen-saver');
@@ -225,7 +231,7 @@ export function createTray(mainWindow, title = '') {
             label: '项目主页',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/home.png') : path.join(process.resourcesPath, 'icons', 'menu', 'home.png'),
             click: () => {
-                shell.openExternal('https://github.com/iAJue/');
+                shell.openExternal('https://Music.MoeKoe.cn');
             }
         },
         {
