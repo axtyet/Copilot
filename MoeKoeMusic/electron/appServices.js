@@ -9,6 +9,7 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { checkForUpdates } from './updater.js';
 import { Notification } from 'electron';
+import extensionManager from './extensionManager.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -62,9 +63,7 @@ export function createWindow() {
             webSecurity: true,
             zoomFactor: 1.0
         },
-        icon: isDev
-            ? path.join(__dirname, '../build/icons/icon.ico')
-            : path.join(process.resourcesPath, 'icons', 'icon.ico')
+        icon: getIconPath('icon.ico')
     });
 
     if (store.get('maximize')) {
@@ -83,6 +82,10 @@ export function createWindow() {
             mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
         }
     }
+
+    mainWindow.webContents.once('dom-ready', () => {
+        extensionManager.loadChromeExtensions();
+    });
 
     mainWindow.webContents.on('dom-ready', () => {
         console.log('DOM Ready');
@@ -213,65 +216,81 @@ export function createLyricsWindow() {
     lyricsWindow.setBackgroundColor('#00000000');
 }
 
+const getIconPath = (iconName, subPath = '') => path.join(
+    isDev ? __dirname + '/../build/icons' : process.resourcesPath + '/icons',
+    subPath,
+    iconName
+);
+
 // 创建托盘图标及菜单
 export function createTray(mainWindow, title = '') {
     if (tray && title) {
         tray.setToolTip(title);
         return tray;
     }
-    const trayIconPath = isDev
-        ? (process.platform !== 'darwin' ? path.join(__dirname, '../build/icons/tray-icon.ico') : path.join(__dirname, '../build/icons/tray-icon.png'))
-        : ((process.platform !== 'darwin') ? path.join(process.resourcesPath, 'icons', 'tray-icon.ico') : path.join(process.resourcesPath, 'icons', 'tray-icon.png'));
 
-    tray = new Tray(trayIconPath);
+    let trayIconName
+    if (process.platform === 'linux') {
+        trayIconName = 'linux-icon.png'
+    } else if (process.platform === 'darwin') {
+        trayIconName = 'tray-icon.png'
+    } else {
+        trayIconName = 'tray-icon.ico'
+    }
+    
+    tray = new Tray(getIconPath(trayIconName));
     tray.setToolTip('MoeKoe Music');
 
     const contextMenu = Menu.buildFromTemplate([
         {
             label: '项目主页',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/home.png') : path.join(process.resourcesPath, 'icons', 'menu', 'home.png'),
+            icon: getIconPath('home.png', 'menu'),
             click: () => {
                 shell.openExternal('https://Music.MoeKoe.cn');
             }
         },
         {
             label: '反馈bug',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/bug.png') : path.join(process.resourcesPath, 'icons', 'menu', 'bug.png'),
+            icon: getIconPath('bug.png', 'menu'),
             click: () => {
                 shell.openExternal('https://github.com/iAJue/MoeKoeMusic/issues');
             }
         },
         {
             label: '上一首',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/prev.png') : path.join(process.resourcesPath, 'icons', 'menu', 'prev.png'), accelerator: 'Alt+CommandOrControl+Left',
+            icon: getIconPath('prev.png', 'menu'),
+            accelerator: 'Alt+CommandOrControl+Left',
             click: () => {
                 mainWindow.webContents.send('play-previous-track');
             }
         },
         {
-            label: '暂停', accelerator: 'Alt+CommandOrControl+Space',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/play.png') : path.join(process.resourcesPath, 'icons', 'menu', 'play.png'),
+            label: '暂停',
+            accelerator: 'Alt+CommandOrControl+Space',
+            icon: getIconPath('play.png', 'menu'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');
             }
         },
         {
-            label: '下一首', accelerator: 'Alt+CommandOrControl+Right',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/next.png') : path.join(process.resourcesPath, 'icons', 'menu', 'next.png'),
+            label: '下一首',
+            accelerator: 'Alt+CommandOrControl+Right',
+            icon: getIconPath('next.png', 'menu'),
             click: () => {
                 mainWindow.webContents.send('play-next-track');
             }
         },
         {
             label: '检查更新',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/update.png') : path.join(process.resourcesPath, 'icons', 'menu', 'update.png'),
+            icon: getIconPath('update.png', 'menu'),
             click: () => {
                 checkForUpdates(false);
             }
         },
         {
-            label: '显示/隐藏', accelerator: 'CmdOrCtrl+Shift+S',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/show.png') : path.join(process.resourcesPath, 'icons', 'menu', 'show.png'),
+            label: '显示/隐藏',
+            accelerator: 'CmdOrCtrl+Shift+S',
+            icon: getIconPath('show.png', 'menu'),
             click: () => {
                 if (mainWindow) {
                     if (mainWindow.isVisible()) {
@@ -283,8 +302,9 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '退出程序', accelerator: 'CmdOrCtrl+Q',
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/quit.png') : path.join(process.resourcesPath, 'icons', 'menu', 'quit.png'),
+            label: '退出程序',
+            accelerator: 'CmdOrCtrl+Q',
+            icon: getIconPath('quit.png', 'menu'),
             click: () => {
                 app.isQuitting = true;
                 app.quit();
@@ -318,9 +338,7 @@ export function createTouchBar(mainWindow) {
 
     const iconPath = (iconName) => {
         const originalIcon = nativeImage.createFromPath(
-            isDev
-                ? path.join(__dirname, `../build/icons/${iconName}.png`)
-                : path.join(process.resourcesPath, "icons", `${iconName}.png`)
+            getIconPath(`${iconName}.png`)
         );
 
         // 调整图标大小
@@ -559,7 +577,7 @@ export function registerShortcut() {
                 new Notification({
                     title: '桌面歌词已关闭',
                     body: '仅本次生效',
-                    icon: isDev ? path.join(__dirname, '../build/icons/logo.png') : path.join(process.resourcesPath, 'icons', 'logo.png')
+                    icon: getIconPath('logo.png')
                 }).show();
             } else {
                 createLyricsWindow();
@@ -622,9 +640,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
     const buttons = [
         {
             tooltip: '上一首',
-            icon: isDev
-                ? path.join(__dirname, '../build/icons/prev.png')
-                : path.join(process.resourcesPath, 'icons', 'prev.png'),
+            icon: getIconPath('prev.png'),
             click: () => {
                 mainWindow.webContents.send('play-previous-track');
                 setThumbarButtons(mainWindow, true);
@@ -632,9 +648,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
         },
         {
             tooltip: '暂停',
-            icon: isDev
-                ? path.join(__dirname, '../build/icons/pause.png')
-                : path.join(process.resourcesPath, 'icons', 'pause.png'),
+            icon: getIconPath('pause.png'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');
                 setThumbarButtons(mainWindow, false);
@@ -642,9 +656,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
         },
         {
             tooltip: '下一首',
-            icon: isDev
-                ? path.join(__dirname, '../build/icons/next.png')
-                : path.join(process.resourcesPath, 'icons', 'next.png'),
+            icon: getIconPath('next.png'),
             click: () => {
                 mainWindow.webContents.send('play-next-track');
                 setThumbarButtons(mainWindow, true);
@@ -655,9 +667,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
     if (!isPlaying) {
         buttons[1] = {
             tooltip: '播放',
-            icon: isDev
-                ? path.join(__dirname, '../build/icons/play.png')
-                : path.join(process.resourcesPath, 'icons', 'play.png'),
+            icon: getIconPath('play.png'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');
                 setThumbarButtons(mainWindow, true);

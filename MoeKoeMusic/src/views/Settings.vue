@@ -15,7 +15,8 @@
                  class="setting-section" 
                  v-show="activeTab === sectionIndex">
                 <h3>{{ section.title }}</h3>
-                <div class="settings-cards">
+                <ExtensionManager v-if="section.title === '插件'" />
+                <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in section.items" :key="itemIndex"
                         class="setting-card" @click="item.action ? item.action() : openSelection(item.key)">
                         <div class="setting-card-header">
@@ -131,6 +132,7 @@
 import { ref, onMounted, getCurrentInstance, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
+import ExtensionManager from '@/components/ExtensionManager.vue';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
@@ -247,6 +249,10 @@ const settingSections = computed(() => [
         ]
     },
     {
+        title: '插件',
+        items: []
+    },
+    {
         title: t('xi-tong'),
         items: [
             {
@@ -319,6 +325,7 @@ const getSectionIcon = (title) => {
         [t('jie-mian')]: 'fas fa-palette',
         [t('sheng-yin')]: 'fas fa-volume-up',
         [t('ge-ci')]: 'fas fa-music',
+        '插件': 'fas fa-puzzle-piece',
         [t('xi-tong')]: 'fas fa-cog'
     };
     return iconMap[title] || 'fas fa-cog';
