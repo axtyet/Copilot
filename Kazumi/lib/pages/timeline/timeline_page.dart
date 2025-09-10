@@ -4,7 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/pages/menu/menu.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/pages/timeline/timeline_controller.dart';
-import 'package:kazumi/bean/card/timeline_bangumi_card.dart';
+import 'package:kazumi/bean/card/bangumi_timeline_card.dart';
 import 'package:kazumi/utils/utils.dart';
 import 'package:kazumi/utils/constants.dart';
 import 'package:provider/provider.dart';
@@ -87,95 +87,92 @@ class _TimelinePageState extends State<TimelinePage>
 
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(builder: (context, orientation) {
-      return Observer(builder: (context) {
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (bool didPop, Object? result) {
-            if (didPop) {
-              return;
-            }
-            onBackPressed(context);
-          },
-          child: Scaffold(
-            appBar: SysAppBar(
-              needTopOffset: false,
-              toolbarHeight: 104,
-              bottom: TabBar(
-                controller: tabController,
-                tabs: tabs,
-                indicatorColor: Theme.of(context).colorScheme.primary,
-              ),
-              title: InkWell(
-                child: Text(timelineController.seasonString),
-                onTap: () {
-                  KazumiDialog.show(builder: (context) {
-                    final currDate = DateTime.now();
-                    final years =
-                        List.generate(20, (index) => currDate.year - index);
-                    List<DateTime> buttons = [];
-                    for (final i in years) {
-                      for (final s in seasons) {
-                        final date = generateDateTime(i, s);
-                        if (currDate.isAfter(date)) {
-                          buttons.add(date);
-                        }
+    return Observer(builder: (context) {
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) {
+          if (didPop) {
+            return;
+          }
+          onBackPressed(context);
+        },
+        child: Scaffold(
+          appBar: SysAppBar(
+            needTopOffset: false,
+            toolbarHeight: 104,
+            bottom: TabBar(
+              controller: tabController,
+              tabs: tabs,
+              indicatorColor: Theme.of(context).colorScheme.primary,
+            ),
+            title: InkWell(
+              child: Text(timelineController.seasonString),
+              onTap: () {
+                KazumiDialog.show(builder: (context) {
+                  final currDate = DateTime.now();
+                  final years =
+                      List.generate(20, (index) => currDate.year - index);
+                  List<DateTime> buttons = [];
+                  for (final i in years) {
+                    for (final s in seasons) {
+                      final date = generateDateTime(i, s);
+                      if (currDate.isAfter(date)) {
+                        buttons.add(date);
                       }
                     }
-                    return AlertDialog(
-                      title: const Text("时间机器"),
-                      content: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: Utils.isCompact() ? 2 : 8,
-                          children: [
-                            for (final date in buttons)
-                              Utils.isSameSeason(
-                                      timelineController.selectedDate, date)
-                                  ? FilledButton(
-                                      onPressed: () {},
-                                      child: Text(getStringByDateTime(date)),
-                                    )
-                                  : FilledButton.tonal(
-                                      onPressed: () async {
-                                        KazumiDialog.dismiss();
-                                        timelineController.tryEnterSeason(date);
-                                        if (Utils.isSameSeason(
-                                            timelineController.selectedDate,
-                                            currDate)) {
-                                          await timelineController
-                                              .getSchedules();
-                                        } else {
-                                          await timelineController
-                                              .getSchedulesBySeason();
-                                        }
-                                        timelineController
-                                            .seasonString = AnimeSeason(
-                                                timelineController.selectedDate)
-                                            .toString();
-                                      },
-                                      child: Text(getStringByDateTime(date)),
-                                    )
-                          ],
-                        ),
+                  }
+                  return AlertDialog(
+                    title: const Text("时间机器"),
+                    content: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: Utils.isCompact() ? 2 : 8,
+                        children: [
+                          for (final date in buttons)
+                            Utils.isSameSeason(
+                                    timelineController.selectedDate, date)
+                                ? FilledButton(
+                                    onPressed: () {},
+                                    child: Text(getStringByDateTime(date)),
+                                  )
+                                : FilledButton.tonal(
+                                    onPressed: () async {
+                                      KazumiDialog.dismiss();
+                                      timelineController.tryEnterSeason(date);
+                                      if (Utils.isSameSeason(
+                                          timelineController.selectedDate,
+                                          currDate)) {
+                                        await timelineController.getSchedules();
+                                      } else {
+                                        await timelineController
+                                            .getSchedulesBySeason();
+                                      }
+                                      timelineController
+                                          .seasonString = AnimeSeason(
+                                              timelineController.selectedDate)
+                                          .toString();
+                                    },
+                                    child: Text(getStringByDateTime(date)),
+                                  )
+                        ],
                       ),
-                    );
-                  });
-                },
-              ),
+                    ),
+                  );
+                });
+              },
             ),
-            body: renderBody(orientation),
           ),
-        );
-      });
+          body: renderBody,
+        ),
+      );
     });
   }
 
-  Widget renderBody(Orientation orientation) {
+  Widget get renderBody {
     if (timelineController.bangumiCalendar.isNotEmpty) {
       return TabBarView(
         controller: tabController,
-        children: contentGrid(timelineController.bangumiCalendar, orientation),
+        children: contentGrid(timelineController.bangumiCalendar),
       );
     } else {
       return const Center(
@@ -184,40 +181,39 @@ class _TimelinePageState extends State<TimelinePage>
     }
   }
 
-  List<Widget> contentGrid(
-      List<List<BangumiItem>> bangumiCalendar, Orientation orientation) {
+  List<Widget> contentGrid(List<List<BangumiItem>> bangumiCalendar) {
     List<Widget> gridViewList = [];
-    int crossCount;
-    crossCount = orientation == Orientation.portrait ? 1 : 3;
-    double cardHeight = Utils.isDesktop()
-        ? 160
-        : (Utils.isTablet()
-            ? 140
-            : 120);
+    int crossCount = 1;
+    if (MediaQuery.sizeOf(context).width > LayoutBreakpoint.compact['width']!) {
+      crossCount = 2;
+    }
+    if (MediaQuery.sizeOf(context).width > LayoutBreakpoint.medium['width']!) {
+      crossCount = 3;
+    }
+    double cardHeight =
+        Utils.isDesktop() ? 160 : (Utils.isTablet() ? 140 : 120);
     for (var bangumiList in bangumiCalendar) {
       gridViewList.add(
-        Padding(
-          padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
-          child: CustomScrollView(
-            slivers: [
-              SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  mainAxisSpacing: StyleString.cardSpace - 2,
-                  crossAxisSpacing: StyleString.cardSpace,
-                  crossAxisCount: crossCount,
-                  mainAxisExtent: cardHeight + 12,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    if (bangumiList.isEmpty) return null;
-                    final item = bangumiList[index];
-                    return TimelineBangumiCard(bangumiItem: item);
-                  },
-                  childCount: bangumiList.isNotEmpty ? bangumiList.length : 10,
-                ),
+        CustomScrollView(
+          slivers: [
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                mainAxisSpacing: StyleString.cardSpace - 2,
+                crossAxisSpacing: StyleString.cardSpace,
+                crossAxisCount: crossCount,
+                mainAxisExtent: cardHeight + 12,
               ),
-            ],
-          ),
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  if (bangumiList.isEmpty) return null;
+                  final item = bangumiList[index];
+                  return BangumiTimelineCard(
+                      bangumiItem: item, cardHeight: cardHeight);
+                },
+                childCount: bangumiList.isNotEmpty ? bangumiList.length : 10,
+              ),
+            ),
+          ],
         ),
       );
     }
