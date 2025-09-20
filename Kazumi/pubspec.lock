@@ -1712,7 +1712,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "749437f79bf1609d32c8ef177f70e2dc690a27b3"
+      resolved-ref: "0ce605b21d2389b1d35d86d052b756aab2fdb9e7"
       url: "https://github.com/Predidit/flutter-webview-windows.git"
     source: git
     version: "0.4.0"
