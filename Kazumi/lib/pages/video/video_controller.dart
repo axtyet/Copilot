@@ -18,6 +18,8 @@ import 'package:kazumi/modules/bangumi/episode_item.dart';
 import 'package:kazumi/modules/comments/comment_item.dart';
 import 'package:kazumi/request/bangumi.dart';
 import 'package:dio/dio.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:kazumi/utils/storage.dart';
 
 part 'video_controller.g.dart';
 
@@ -84,10 +86,9 @@ abstract class _VideoPageController with Store {
 
   final PluginsController pluginsController = Modular.get<PluginsController>();
   final HistoryController historyController = Modular.get<HistoryController>();
-
-  /// Repository 层依赖（用于离线模式）
-  final IDownloadRepository _downloadRepository = Modular.get<IDownloadRepository>();
-  final IDownloadManager _downloadManager = Modular.get<IDownloadManager>();
+  final IDownloadRepository downloadRepository = Modular.get<IDownloadRepository>();
+  final IDownloadManager downloadManager = Modular.get<IDownloadManager>();
+  final Box setting = GStorage.setting;
 
   /// 长生命周期的视频源提供者（页面生命周期内复用，WebView 实例在 Provider 内复用）
   WebViewVideoSourceProvider? _videoSourceProvider;
@@ -136,17 +137,14 @@ abstract class _VideoPageController with Store {
     ));
   }
 
-  /// 重置离线模式状态
   void resetOfflineMode() {
     isOfflineMode = false;
     _offlineVideoPath = null;
     _offlinePluginName = '';
   }
 
-  /// 获取离线视频路径（用于 VideoPage 初始化播放器）
   String? get offlineVideoPath => _offlineVideoPath;
 
-  /// 获取离线模式下的插件名
   String get offlinePluginName => _offlinePluginName;
 
   /// 获取当前实际的集数编号
@@ -169,7 +167,6 @@ abstract class _VideoPageController with Store {
     this.currentRoad = currentRoad;
 
     if (isOfflineMode) {
-      // 离线模式：从下载记录获取本地路径
       await _changeOfflineEpisode(episode, offset);
       return;
     }
@@ -184,7 +181,6 @@ abstract class _VideoPageController with Store {
       urlItem = currentPlugin.baseUrl + urlItem;
     }
 
-    // 统一使用 Provider 模式解析视频源
     await _resolveWithProvider(urlItem, offset);
   }
 
@@ -213,20 +209,32 @@ abstract class _VideoPageController with Store {
 
     KazumiLogger().i('VideoPageController: offline episode changed to $actualEpisodeNumber (index: $episode), path: $localPath');
 
-    // 直接初始化播放器
+    final params = PlaybackInitParams(
+      videoUrl: localPath,
+      offset: offset,
+      isLocalPlayback: true,
+      bangumiId: bangumiItem.id,
+      pluginName: _offlinePluginName,
+      episode: actualEpisodeNumber,
+      httpHeaders: {},
+      adBlockerEnabled: false,
+      episodeTitle: roadList[currentRoad].identifier[episode - 1],
+      referer: '',
+      currentRoad: currentRoad,
+    );
+
     final playerController = Modular.get<PlayerController>();
-    playerController.init(localPath, offset: offset);
+    await playerController.init(params);
   }
 
-  /// 获取本地视频路径（通过 Repository 层）
+  /// 获取本地视频路径
   String? _getLocalVideoPath(int bangumiId, String pluginName, int episodeNumber) {
-    final episode = _downloadRepository.getEpisode(bangumiId, pluginName, episodeNumber);
-    return _downloadManager.getLocalVideoPath(episode);
+    final episode = downloadRepository.getEpisode(bangumiId, pluginName, episodeNumber);
+    return downloadManager.getLocalVideoPath(episode);
   }
 
-  /// 使用 VideoSourceProvider 解析视频源（原生播放器模式）
+  /// 使用 VideoSourceProvider 解析视频源
   Future<void> _resolveWithProvider(String url, int offset) async {
-    // 取消上一次正在进行的解析，但不 dispose Provider
     _videoSourceProvider?.cancel();
 
     loading = true;
@@ -242,9 +250,29 @@ abstract class _VideoPageController with Store {
       loading = false;
       KazumiLogger().i('VideoPageController: resolved video URL: ${source.url}');
 
-      // 直接初始化播放器
+      final bool forceAdBlocker = setting.get(SettingBoxKey.forceAdBlocker, defaultValue: false);
+      
+      final params = PlaybackInitParams(
+        videoUrl: source.url,
+        offset: source.offset,
+        isLocalPlayback: false,
+        bangumiId: bangumiItem.id,
+        pluginName: currentPlugin.name,
+        episode: currentEpisode,
+        httpHeaders: {
+          'user-agent': currentPlugin.userAgent.isEmpty
+              ? Utils.getRandomUA()
+              : currentPlugin.userAgent,
+          if (currentPlugin.referer.isNotEmpty) 'referer': currentPlugin.referer,
+        },
+        adBlockerEnabled: forceAdBlocker || currentPlugin.adBlocker,
+        episodeTitle: roadList[currentRoad].identifier[currentEpisode - 1],
+        referer: currentPlugin.referer,
+        currentRoad: currentRoad,
+      );
+
       final playerController = Modular.get<PlayerController>();
-      playerController.init(source.url, offset: source.offset);
+      await playerController.init(params);
     } on VideoSourceTimeoutException {
       KazumiLogger().w('VideoPageController: video URL resolution timed out');
       loading = false;
