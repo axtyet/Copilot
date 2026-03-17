@@ -60,6 +60,7 @@ export function registerExtensionIPC() {
                 
                 return {
                     id: ext.id,
+                    pluginId: ext.manifest?.plugin_id || scannedExt?.manifest?.plugin_id || '',
                     name: ext.name,
                     directory: scannedExt?.directory || '',
                     version: ext.version,
@@ -227,7 +228,22 @@ export function registerExtensionIPC() {
             return { success: false, message: error.message };
         }
     });
-
+    
+    // 从URL安装插件
+    ipcMain.handle('install-plugin-from-url', async (event, payload = {}) => {
+        try {
+            const result = await extensionManager.installPluginFromUrl(
+                payload.downloadUrl,
+                payload.extensionId,
+                payload.extensionDir
+            );
+            return result;
+        } catch (error) {
+            log.error('Failed to install remote plugin:', error);
+            return { success: false, message: error.message };
+        }
+    });
+    
     // 显示文件选择对话框
     ipcMain.handle('show-open-dialog', async (event, options) => {
         try {
@@ -275,7 +291,10 @@ export function unregisterExtensionIPC() {
         'uninstall-extension',
         'validate-extension',
         'get-extensions-directory',
-        'ensure-extensions-directory'
+        'ensure-extensions-directory',
+        'install-plugin-from-zip',
+        'install-plugin-from-url',
+        'show-open-dialog'
     ];
 
     channels.forEach(channel => {
