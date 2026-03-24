@@ -703,21 +703,21 @@ const selectionTypeMap = {
         ]
     },
     loudnessNormalization: {
-        title: t('ping-heng-yin-pin-xiang-du'),
+        title: t('ping-heng-yin-pin-xiang-du')+'(实验性)',
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     pauseOnAudioOutputChange: {
-        title: '输出设备变化自动暂停',
+        title: '输出设备变化自动暂停(实验性)',
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     audioOutputDevice: {
-        title: '音频输出设备',
+        title: '音频输出设备(实验性)',
         options: []
     },
 
