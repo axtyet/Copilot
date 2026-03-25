@@ -216,7 +216,8 @@ onMounted(() => {
     playlist();
 });
 
-onUpdated(() => {
+onUpdated(async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     if(!window.electron){
         if(route.query.hash){
             privilegeSong(route.query.hash).then(res=>{

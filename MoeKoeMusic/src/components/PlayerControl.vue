@@ -988,7 +988,7 @@ const setupMediaShortcuts = () => {
     window.electron.ipcRenderer.on('toggle-mute', toggleMute);
     window.electron.ipcRenderer.on('toggle-like', () => playlistSelect.value.toLike());
     window.electron.ipcRenderer.on('toggle-mode', togglePlaybackMode);
-    window.electron.ipcRenderer.on('url-params', (data) => {
+    window.electron.ipcRenderer.on('url-params', (_event, data) => {
         console.log('[PlayerControl] 接收到URL参数:', data);
 
         // 处理歌曲哈希参数
