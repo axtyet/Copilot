@@ -397,8 +397,7 @@ const updateCurrentTime = throttle(() => {
     }
 
     if (!hasLyricsData && isElectron() && (desktopLyricsEnabled || statusBarLyricsEnabled || savedConfig?.apiMode === 'on')) {
-        if (isLyrics === false) return;
-        getCurrentLyrics();
+        retryMissingLyrics();
     }
 
     localStorage.setItem('player_progress', audio.currentTime);
@@ -486,11 +485,41 @@ const restoreLyricsScroll = throttle(() => {
 
 // 获取歌词的节流函数
 let isLyrics;
-const getCurrentLyrics = throttle(async() => {
-    if (currentSong.value.hash) {
-        isLyrics = await getLyrics(currentSong.value.hash);
+let pendingLyricsHash = '';
+let pendingLyricsPromise = null;
+let lastLyricsRetryAt = 0;
+const getCurrentLyrics = async () => {
+    const hash = currentSong.value.hash;
+    if (!hash) return false;
+
+    if (pendingLyricsHash === hash && pendingLyricsPromise) {
+        return pendingLyricsPromise;
     }
-}, 1000);
+
+    pendingLyricsHash = hash;
+    pendingLyricsPromise = (async () => {
+        isLyrics = await getLyrics(hash);
+        return isLyrics;
+    })();
+
+    try {
+        return await pendingLyricsPromise;
+    } finally {
+        if (pendingLyricsHash === hash) {
+            pendingLyricsHash = '';
+            pendingLyricsPromise = null;
+        }
+    }
+};
+const retryMissingLyrics = () => {
+    if (isLyrics === false || pendingLyricsPromise) return;
+
+    const now = Date.now();
+    if (now - lastLyricsRetryAt < 1000) return;
+
+    lastLyricsRetryAt = now;
+    getCurrentLyrics();
+};
 
 // 计算属性
 const formattedCurrentTime = computed(() => formatTime(currentTime.value));
@@ -590,6 +619,9 @@ const playSong = async (song) => {
 
         // 清空歌词数据
         lyricsData.value = [];
+        originalLyrics.value = '';
+        isLyrics = undefined;
+        lastLyricsRetryAt = 0;
         if(song?.isLocal) return;
         // 保存当前歌曲到本地存储
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
