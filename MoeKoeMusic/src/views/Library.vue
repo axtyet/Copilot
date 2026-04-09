@@ -45,8 +45,8 @@
                 </div>
             </div>
         </div>
-        <h2 class="section-title" @click="addAllSongsToQueue">{{ $t('wo-xi-huan-ting') }}</h2>
-        <div class="favorite-section">
+        <h2 v-if="isLoading || listenHistory.length > 0" class="section-title" @click="addAllSongsToQueue">{{ $t('wo-xi-huan-ting') }}</h2>
+        <div v-if="isLoading || listenHistory.length > 0" class="favorite-section">
             <div class="song-list">
                 <div v-if="isLoading" class="skeleton-loader">
                     <div v-for="n in 16" :key="n" class="skeleton-item">
@@ -57,7 +57,7 @@
                         </div>
                     </div>
                 </div>
-                <ul v-if="listenHistory.length > 0">
+                <ul v-else>
                     <li v-for="(song, index) in listenHistory" :key="index" class="song-item"
                         @click="playSong(song['hash'], song.name.split(' - ')[1] || song.name, $getCover(song.image, 480), song.singername)">
                         <img :src="$getCover(song.image, 120)" class="album-cover" />
@@ -67,12 +67,6 @@
                         </div>
                     </li>
                 </ul>
-                <div v-else class="empty-container">
-                    <div class="empty-image">
-                        <img src="/assets/images/empty.png" alt="暂无数据" />
-                    </div>
-                    <div class="empty-description">{{ t('zhe-li-shi-mo-du-mei-you') }}</div>
-                </div>
             </div>
         </div>
 

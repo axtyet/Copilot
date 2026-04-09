@@ -1197,7 +1197,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .primary-btn,
 .follow-btn {
-    background-color: #ff69b4;
+    background-color: var(--primary-color);
     color: $white;
     border: none;
     padding: 10px 20px;

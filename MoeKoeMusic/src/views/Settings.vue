@@ -1468,6 +1468,10 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
+
+    .setting-card-header i{
+        color: var(--primary-color);
+    }
 }
 
 .setting-card {
