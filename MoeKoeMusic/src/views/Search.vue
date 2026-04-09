@@ -4,12 +4,8 @@
             <h2 class="section-title">{{ $t('sou-suo-jie-guo') }}</h2>
             <!-- 添加搜索类型标签栏 -->
             <div class="search-tabs">
-                <button 
-                    v-for="tab in searchTabs" 
-                    :key="tab.type" 
-                    :class="['tab-button', { active: searchType === tab.type }]"
-                    @click="changeSearchType(tab.type)"
-                >
+                <button v-for="tab in searchTabs" :key="tab.type"
+                    :class="['tab-button', { active: searchType === tab.type }]" @click="changeSearchType(tab.type)">
                     {{ tab.name }}
                 </button>
             </div>
@@ -29,7 +25,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 歌手/专辑/歌单共用骨架屏 -->
                 <div v-else class="grid-skeleton">
                     <div class="skeleton-grid">
@@ -45,7 +41,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <template v-else-if="searchResults.length > 0">
                 <!-- 歌曲搜索结果 -->
                 <ul v-if="searchType === 'song'">
@@ -65,15 +61,17 @@
                         </div>
                     </li>
                 </ul>
-                
+
                 <!-- 歌手搜索结果 -->
-                <ArtistGrid v-else-if="searchType === 'author'" :artists="searchResults" @artist-click="handleArtistClick" />
-                
+                <ArtistGrid v-else-if="searchType === 'author'" :artists="searchResults"
+                    @artist-click="handleArtistClick" />
+
                 <!-- 专辑搜索结果 -->
                 <AlbumGrid v-else-if="searchType === 'album'" :albums="searchResults" @album-click="handleAlbumClick" />
-                
+
                 <!-- 歌单搜索结果 -->
-                <PlaylistGrid v-else-if="searchType === 'special'" :playlists="searchResults" @playlist-click="handlePlaylistClick" />
+                <PlaylistGrid v-else-if="searchType === 'special'" :playlists="searchResults"
+                    @playlist-click="handlePlaylistClick" />
 
                 <div class="pagination">
                     <button @click="prevPage" :disabled="currentPage === 1">{{ $t('shang-yi-ye') }}</button>
@@ -103,7 +101,7 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const searchQuery = ref(route.query.q || '');
-const searchType = ref(route.query.type || 'song'); 
+const searchType = ref(route.query.type || 'song');
 const searchResults = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(30);
@@ -122,12 +120,12 @@ const searchTabs = [
 const changeSearchType = (type) => {
     searchType.value = type;
     currentPage.value = 1; // 切换类型时重置页码
-    
+
     // 更新URL参数
     router.push({
-        query: { 
+        query: {
             ...route.query,
-            type: type 
+            type: type
         }
     });
     performSearch();
@@ -136,7 +134,7 @@ const changeSearchType = (type) => {
 const showContextMenu = (event, song) => {
     if (contextMenuRef.value) {
         song.cover = song.Image?.replace("{size}", 480) || './assets/images/ico.png',
-        song.timeLength = song.Duration;
+            song.timeLength = song.Duration;
         song.OriSongName = song.FileName;
         contextMenuRef.value.openContextMenu(event, song);
     }
@@ -252,14 +250,14 @@ const handlePlaylistClick = (playlist) => {
 const handleArtistClick = (artist) => {
     router.push({
         path: '/PlaylistDetail',
-        query: { 
+        query: {
             singerid: artist.AuthorId
         }
     });
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .search-results {
     padding: 20px;
 }
@@ -280,25 +278,25 @@ const handleArtistClick = (artist) => {
     position: relative;
     transition: all 0.3s;
     border-radius: 5px 5px 0 0;
-}
 
-.tab-button:hover {
-    color: var(--primary-color);
-}
+    &:hover {
+        color: var(--primary-color);
+    }
 
-.tab-button.active {
-    color: var(--primary-color);
-    font-weight: bold;
-}
+    &.active {
+        color: var(--primary-color);
+        font-weight: bold;
 
-.tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary-color);
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+    }
 }
 
 .result-item {
@@ -310,24 +308,24 @@ const handleArtistClick = (artist) => {
     cursor: pointer;
     border-radius: 5px;
     gap: 10px;
-}
 
-.result-item:hover {
-    background-color: #f5f5f5;
-}
+    &:hover {
+        background-color: #f5f5f5;
+    }
 
-.result-item img {
-    width: 50px;
-    height: 50px;
-    border-radius: 5px;
-    margin-right: 10px;
+    img {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
 }
 
 .result-info {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 0; /* 防止flex子项溢出 */
+    min-width: 0;
 }
 
 .result-meta {
@@ -404,17 +402,31 @@ const handleArtistClick = (artist) => {
     color: #333;
     min-width: 40px;
     transition: all 0.3s;
-}
 
-.page-number:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
+    &:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
 
-.page-number.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+    &.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    &.ellipsis {
+        background-color: transparent;
+        border: none;
+        cursor: default;
+        pointer-events: none;
+        padding: 8px 8px;
+        min-width: 30px;
+
+        &:hover {
+            background-color: transparent;
+            color: #333;
+        }
+    }
 }
 
 .pagination button {
@@ -425,18 +437,18 @@ const handleArtistClick = (artist) => {
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
-}
 
-.pagination button:hover:not(:disabled) {
-    background-color: var(--primary-color);
-    color: white;
-}
+    &:hover:not(:disabled) {
+        background-color: var(--primary-color);
+        color: white;
+    }
 
-.pagination button:disabled {
-    background-color: white;
-    color: #999;
-    cursor: not-allowed;
-    border-color: #ddd;
+    &:disabled {
+        background-color: white;
+        color: #999;
+        cursor: not-allowed;
+        border-color: #ddd;
+    }
 }
 
 .section-title {
@@ -445,31 +457,14 @@ const handleArtistClick = (artist) => {
     margin-bottom: 30px;
     color: var(--primary-color);
 }
-
-.page-number.ellipsis {
-    background-color: transparent;
-    border: none;
-    cursor: default;
-    pointer-events: none;
-    padding: 8px 8px;
-    min-width: 30px;
-}
-
-.page-number.ellipsis:hover {
-    background-color: transparent;
-    color: #333;
-}
-
-
 </style>
 
-<!-- 添加骨架屏样式 -->
-<style scoped>
-/* 骨架屏动画 */
+<style lang="scss" scoped>
 @keyframes shimmer {
     0% {
         background-position: -468px 0;
     }
+
     100% {
         background-position: 468px 0;
     }
@@ -483,7 +478,8 @@ const handleArtistClick = (artist) => {
     margin-bottom: 15px;
 }
 
-.skeleton-cover, .skeleton-avatar {
+.skeleton-cover,
+.skeleton-avatar {
     width: 50px;
     height: 50px;
     border-radius: 5px;
@@ -528,15 +524,15 @@ const handleArtistClick = (artist) => {
     border-radius: 3px;
     width: 100%;
     margin-top: 5px;
-}
 
-.skeleton-line.short {
-    width: 60%;
-}
+    &.short {
+        width: 60%;
+    }
 
-.skeleton-line.tiny {
-    width: 40%;
-    height: 12px;
+    &.tiny {
+        width: 40%;
+        height: 12px;
+    }
 }
 
 .skeleton-grid {
@@ -545,7 +541,9 @@ const handleArtistClick = (artist) => {
     gap: 20px;
 }
 
-.skeleton-artist-card, .skeleton-album-card, .skeleton-playlist-card {
+.skeleton-artist-card,
+.skeleton-album-card,
+.skeleton-playlist-card {
     display: flex;
     flex-direction: column;
     align-items: center;
