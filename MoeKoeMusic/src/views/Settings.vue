@@ -214,6 +214,7 @@ const selectedSettings = ref({
     startMinimized: { displayText: t('guan-bi'), value: 'off' },
     preventAppSuspension: { displayText: t('guan-bi'), value: 'off' },
     networkMode: { displayText: t('zhu-wang'), value: 'mainnet' },
+    startupPage: { displayText: t('shou-ye'), value: 'home' },
     proxy: { displayText: t('guan-bi'), value: 'off' },
     proxyUrl: { displayText: '', value: '' },
     apiBaseUrlMode: { displayText: '默认', value: 'default' },
@@ -254,6 +255,10 @@ const settingSections = computed(() => [
                 showRefreshHint: true,
                 refreshHintText: t('shua-xin-hou-sheng-xiao'),
                 helpLink: 'https://music.moekoe.cn/guide/font-settings.html'
+            },
+            {
+                key: 'startupPage',
+                label: '启动页'
             }
         ]
     },
@@ -462,7 +467,8 @@ const getItemIcon = (key) => {
         'touchBar': 'fas fa-tablet-alt',
         'shortcuts': 'fas fa-keyboard',
         'pwa': 'fas fa-mobile-alt',
-        'proxy': 'fas fa-random'
+        'proxy': 'fas fa-random',
+        'startupPage': 'fas fa-home'
     };
     return iconMap[key] || 'fas fa-sliders-h';
 };
@@ -659,6 +665,14 @@ const selectionTypeMap = {
             { displayText: t('zhu-wang'), value: 'mainnet' },
             { displayText: t('ce-wang'), value: 'testnet' },
             { displayText: t('kai-fa-wang'), value: 'devnet' }
+        ]
+    },
+    startupPage: {
+        title: '启动页',
+        options: [
+            { displayText: t('shou-ye'), value: 'Index' },
+            { displayText: t('fa-xian'), value: 'Discover' },
+            { displayText: t('yin-le-ku'), value: 'Library' }
         ]
     },
     proxy: {
