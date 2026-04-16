@@ -63,7 +63,7 @@
                         </div>
                         <div class="market-status-group">
                             <span class="market-badge installed">已安装</span>
-                            <button @click="openExtensionPopup(extension.id, extension.name)" class="extension-btn secondary" :disabled="extensionsLoading">
+                            <button v-if="extension.hasPopup" @click="openExtensionPopup(extension.id)" class="extension-btn secondary" :disabled="extensionsLoading">
                                 <i class="fas fa-up-right-from-square"></i>
                                 {{ t('da-kai-tan-chuang') }}
                             </button>
@@ -605,9 +605,9 @@ const openPluginsRepo = () => {
     window.open('https://github.com/MoeKoeMusic/MoeKoeMusic-Plugins', '_blank', 'noopener,noreferrer')
 }
 
-const openExtensionPopup = async (extensionId, extensionName) => {
+const openExtensionPopup = async extensionId => {
     try {
-        const result = await window.electronAPI?.openExtensionPopup(extensionId, extensionName)
+        const result = await window.electronAPI?.openExtensionPopup(extensionId)
         if (!result?.success) {
             showAlert(`${t('da-kai-tan-chuang-shi-bai')}: ${result?.message || t('wei-zhi-cuo-wu')}`)
         }

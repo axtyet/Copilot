@@ -50,7 +50,10 @@
                         @contextmenu.prevent="showContextMenu($event, result)">
                         <img :src="$getCover(result.Image, 100)" alt="Cover" />
                         <div class="result-info">
-                            <p class="result-name">{{ result.OriSongName }}</p>
+                            <p class="result-name">
+                                <span class="result-name-text">{{ result.OriSongName }}</span>
+                                <span v-if="Number(result?.IsOriginal) === 1" class="original-tag">原唱</span>
+                            </p>
                             <p class="result-type">{{ result.SingerName }}</p>
                         </div>
                         <div class="result-meta">
@@ -344,14 +347,31 @@ const handleArtistClick = (artist) => {
 }
 
 .result-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 16px;
     font-weight: bold;
     height: 23px;
     margin: 0;
     max-width: 900px;
+    min-width: 0;
+}
+
+.result-name-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.original-tag {
+    flex-shrink: 0;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    line-height: 14px;
+    color: #fff;
+    background-color: var(--primary-color);
 }
 
 .result-duration,

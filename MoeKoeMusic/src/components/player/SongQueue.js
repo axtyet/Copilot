@@ -156,7 +156,8 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
                     try {
                         const candidateResponse = await get('/song/url', {
                             hash: candidate.hash,
-                            quality: candidate.quality
+                            quality: candidate.quality,
+                            ppage_id: '356753938'
                         });
                         if (isStaleRequest()) return { stale: true };
 

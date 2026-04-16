@@ -156,7 +156,8 @@
                         <span>{{ config.label }}</span>
                         <div class="shortcut-input" @click="startRecording(key)"
                             :class="{ 'recording': recordingKey === key }">
-                            {{ shortcuts[key] || $t('dian-ji-she-zhi-kuai-jie-jian') }}
+                            <!-- {{ displayShortcut(key) || $t('dian-ji-she-zhi-kuai-jie-jian') }} -->
+                            <span v-html="displayShortcut(key) || $t('dian-ji-she-zhi-kuai-jie-jian')" />
                             <div v-if="shortcuts[key]" class="clear-shortcut" @click.stop="clearShortcut(key)">
                                 ×
                             </div>
@@ -1234,6 +1235,35 @@ const closeShortcutSettings = () => {
     recordingKey.value = '';
 };
 
+const displayShortcut = (key) => {
+    if (!shortcuts.value?.[key]) return false;
+    const keys = {
+        'Meta': isElectron() ?
+            window?.electron.platform === 'darwin' ? '⌘' : '<i class="fab fa-windows"></i>' :
+            '⌘/<i class="fab fa-windows"></i>',
+        'num0': 'Num0',
+        'num1': 'Num1',
+        'num2': 'Num2',
+        'num3': 'Num3',
+        'num4': 'Num4',
+        'num5': 'Num5',
+        'num6': 'Num6',
+        'num7': 'Num7',
+        'num8': 'Num8',
+        'num9': 'Num9',
+        'numdec': 'Num.',
+        'numadd': 'Num+',
+        'numsub': 'Num-',
+        'nummult': 'Num*',
+        'numdiv': 'Num/',
+    };
+    let display = shortcuts.value[key];
+    Object.keys(keys).forEach(k => {
+        display = display.replace(k, keys[k]);
+    });
+    return display;
+};
+
 const startRecording = (key) => {
     recordingKey.value = key;
     shortcuts.value[key] = t('qing-an-xia-xiu-shi-jian');
@@ -1247,7 +1277,7 @@ const recordShortcut = (e) => {
     const keys = [];
 
     // 修饰键
-    if (e.metaKey) keys.push('CommandOrControl');
+    if (e.metaKey) keys.push('Meta');
     if (e.ctrlKey) keys.push('Ctrl');
     if (e.altKey) keys.push('Alt');
     if (e.shiftKey) keys.push('Shift');
@@ -1260,7 +1290,7 @@ const recordShortcut = (e) => {
 
     // 特殊键映射
     const specialKeys = {
-        ' ': 'Space',
+        'Space': 'Space',
         'ArrowUp': 'Up',
         'ArrowDown': 'Down',
         'ArrowLeft': 'Left',
@@ -1274,16 +1304,26 @@ const recordShortcut = (e) => {
         'PageDown': 'PageDown',
         'Home': 'Home',
         'End': 'End',
-        '+': 'numadd',
-        '-': 'numsub',
-        '*': 'nummult',
-        '/': 'numdiv',
-        '=': 'Equal',
-        '.': 'Dot',
-        'NumpadDecimal': 'numdec'
+
+        // Numpad
+        'Numpad0': 'num0',
+        'Numpad1': 'num1',
+        'Numpad2': 'num2',
+        'Numpad3': 'num3',
+        'Numpad4': 'num4',
+        'Numpad5': 'num5',
+        'Numpad6': 'num6',
+        'Numpad7': 'num7',
+        'Numpad8': 'num8',
+        'Numpad9': 'num9',
+        'NumpadDecimal': 'numdec',
+        'NumpadAdd': 'numadd',
+        'NumpadSubtract': 'numsub',
+        'NumpadMultiply': 'nummult',
+        'NumpadDivide': 'numdiv',
     };
 
-    const key = specialKeys[e.key] || e.key.toUpperCase();
+    const key = specialKeys[e.code] || e.key.toUpperCase();
 
     // 只有当按下的不是单独的修饰键时才结束记录
     if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
@@ -1291,7 +1331,7 @@ const recordShortcut = (e) => {
 
         if (keys.length > 0) {
             // 检查是否包含必要的修饰键
-            if (!keys.some(k => ['Ctrl', 'Alt', 'Shift', 'CommandOrControl'].includes(k))) {
+            if (!keys.some(k => ['Ctrl', 'Alt', 'Shift', 'Meta'].includes(k))) {
                 window.$modal.alert(t('kuai-jie-jian-bi-xu-bao-han-zhi-shao-yi-ge-xiu-shi-jian-ctrlaltshiftcommand'));
                 return;
             }
@@ -1317,7 +1357,7 @@ const recordShortcut = (e) => {
 // 添加快捷键验证函数
 const validateShortcut = (shortcut) => {
     const keys = shortcut.split('+');
-    return keys.some(k => ['Ctrl', 'Alt', 'Shift', 'Command'].includes(k));
+    return keys.some(k => ['Ctrl', 'Alt', 'Shift', 'Meta'].includes(k));
 };
 
 // 修改 saveShortcuts 函数，添加检查
@@ -1469,7 +1509,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
 
-    .setting-card-header i{
+    .setting-card-header i {
         color: var(--primary-color);
     }
 }

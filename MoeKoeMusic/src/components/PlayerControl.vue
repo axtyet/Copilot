@@ -781,7 +781,7 @@ const playSongFromQueue = async (direction) => {
             console.log('[PlayerControl] 成功获取歌曲URL，开始播放:', result.song.name);
             await playSong(result.song);
         } else if (result && result.shouldPlayNext) {
-            console.log('[PlayerControl] 云盘歌曲无法播放');
+            console.log('[PlayerControl] 歌曲无法播放');
             handleAutoSwitch();
         } else {
             console.error('[PlayerControl] 无法获取歌曲URL');
@@ -1475,7 +1475,7 @@ defineExpose({
         if (result && result.song) {
             await playSong(result.song);
     } else if (result && result.shouldPlayNext) {
-        console.log('[PlayerControl] 云盘歌曲无法播放');
+        console.log('[PlayerControl] 歌曲无法播放');
         handleAutoSwitch();
         }
         return result;
