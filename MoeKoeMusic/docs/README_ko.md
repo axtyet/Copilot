@@ -1,7 +1,7 @@
 > **주의**: 이 한국어 문서는 업데이트가 지연될 수 있으니, 최신 내용은 [중국어 간체 버전](https://github.com/iAJue/MoeKoeMusic/README.md)을 참고하세요.
 <br />
 <p align="center">
-<img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png" alt="Logo" width="156" height="156">
+<img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/hero.png" alt="hero" width="250" height="250">
 <h2 align="center" style="font-weight: 600">MoeKoe Music</h2>
   <p align="center">
     <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/releases/latest"><img src="https://img.shields.io/github/v/release/MoeKoeMusic/MoeKoeMusic?style=flat-square" /></a>
