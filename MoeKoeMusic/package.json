@@ -1,6 +1,6 @@
 {
   "name": "moekoemusic",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "homepage": "https://github.com/iAJue/MoeKoeMusic",
   "main": "electron/main.js",
   "scripts": {
@@ -97,7 +97,7 @@
       "installerIcon": "build/icons/icon.ico",
       "uninstallerIcon": "build/icons/icon.ico",
       "installerHeaderIcon": "build/icons/icon.ico",
-      "createDesktopShortcut": true,
+      "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
       "shortcutName": "MoeKoe Music",
       "include": "build/installer.nsh",

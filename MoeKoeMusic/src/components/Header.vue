@@ -59,6 +59,7 @@
     </header>
     <div v-if="isDisclaimerVisible" class="modal-overlay" @click="Disclaimer">
         <div class="modal-content" @click.stop>
+            <img class="modal-banner" src="/assets/images/banners.png" alt="Banner">
             <h2>{{ $t('mian-ze-sheng-ming') }}</h2>
             <p>{{
                 $t('0-ben-cheng-xu-shi-ku-gou-di-san-fang-ke-hu-duan-bing-fei-ku-gou-guan-fang-xu-yao-geng-wan-shan-de-gong-neng-qing-xia-zai-guan-fang-ke-hu-duan-ti-yan')
@@ -441,9 +442,20 @@ header {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: left;
     animation: fadeIn 0.3s ease;
+    
+    .modal-banner {
+        position: absolute;
+        top: 0;
+        right: 15px;
+        width: 180px;
+        max-width: 35%;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
 
     h2 {
-        margin-top: 0;
+        margin-top: 20px;
         color: var(--primary-color);
     }
 
