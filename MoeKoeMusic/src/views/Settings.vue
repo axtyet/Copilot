@@ -191,6 +191,7 @@ const defaultApiBaseUrl = DEFAULT_API_BASE_URL;
 
 // 设置配置
 const selectedSettings = ref({
+    searchMode: { displayText: '快速搜索', value: 'quick' },
     language: { displayText: '🌏 ' + t('zi-dong'), value: '' },
     themeColor: { displayText: t('shao-nv-fen'), value: 'pink' },
     theme: { displayText: '☀️ ' + t('qian-se'), value: 'light' },
@@ -243,6 +244,10 @@ const settingSections = computed(() => [
             {
                 key: 'theme',
                 label: t('wai-guan')
+            },
+            {
+                key: 'searchMode',
+                label: '搜索模式'
             },
             {
                 key: 'nativeTitleBar',
@@ -444,6 +449,7 @@ const getItemIcon = (key) => {
         'language': 'fas fa-language',
         'themeColor': 'fas fa-paint-brush',
         'theme': 'fas fa-moon',
+        'searchMode': 'fas fa-search',
         'nativeTitleBar': 'fas fa-window-maximize',
         'font': 'fas fa-font',
         'quality': 'fas fa-headphones',
@@ -508,6 +514,13 @@ const selectionTypeMap = {
             { displayText: '🌗 ' + t('zi-dong'), value: 'auto' },
             { displayText: '☀️ ' + t('qian-se'), value: 'light' },
             { displayText: '🌙 ' + t('shen-se'), value: 'dark' }
+        ]
+    },
+    searchMode: {
+        title: '搜索模式',
+        options: [
+            { displayText: '快速搜索', value: 'quick' },
+            { displayText: '推荐搜索', value: 'recommend' }
         ]
     },
     nativeTitleBar: {

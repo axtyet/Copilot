@@ -20,7 +20,7 @@
             <div class="search-profile">
                 <div class="search-bar">
                     <input v-model="searchQuery" type="text" :placeholder="$t('sou-suo-yin-le-ge-shou-ge-dan')"
-                        @keydown.enter="getSearch">
+                        :class="searchInputClass" :readonly='searchMode === "recommend"' @click="getSearch" @keydown.enter="getSearch">
                 </div>
                 <div class="profile" @click="toggleProfile">
                     <img :src="MoeAuth.UserInfo ? MoeAuth.UserInfo.pic : './assets/images/profile.jpg'"
@@ -111,6 +111,7 @@ const showNewBadge = ref(false);
 const downloadUrl = ref('');
 const appVersion = ref('');
 const platform = ref('');
+const searchMode = ref('quick');
 onMounted(() => {
     updateNavigationStatus();
     if (window.electron) {
@@ -162,17 +163,33 @@ const toggleProfile = () => {
     showProfile.value = !showProfile.value;
 };
 const getSearch = () => {
-    if (searchQuery.value.trim() !== '') {
-        if (searchQuery.value.includes('collection_')) {
+    const keyword = searchQuery.value.trim();
+    const settings = JSON.parse(localStorage.getItem('settings')) || {};
+    searchMode.value = settings?.searchMode === 'recommend' ? 'recommend' : 'quick';
+
+    if (searchMode.value === 'recommend') {
+        const nextQuery = keyword ? { q: keyword } : {};
+        if (route.path === '/search/recommend' && JSON.stringify(route.query) === JSON.stringify(nextQuery)) {
+            return;
+        }
+        router.push({
+            path: '/search/recommend',
+            query: nextQuery
+        });
+        return;
+    }
+
+    if (keyword !== '') {
+        if (keyword.includes('collection_')) {
             router.push({
                 path: '/PlaylistDetail',
-                query: { global_collection_id: searchQuery.value }
+                query: { global_collection_id: keyword }
             });
             return;
         }
         router.push({
             path: '/search',
-            query: { q: searchQuery.value }
+            query: { q: keyword }
         });
     }
 };
@@ -442,7 +459,7 @@ header {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: left;
     animation: fadeIn 0.3s ease;
-    
+
     .modal-banner {
         position: absolute;
         top: 0;
