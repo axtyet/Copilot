@@ -1,8 +1,7 @@
-import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:antlr4/antlr4.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:kazumi/bean/widget/image_preview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -73,8 +72,9 @@ class _BBCodeWidgetState extends State<BBCodeWidget> {
 
     return Wrap(
       children: [
-        SelectableText.rich(
-          TextSpan(
+        RichText(
+          text: TextSpan(
+            style: DefaultTextStyle.of(context).style,
             children: bbcodeBaseListener.bbcode.map((e) {
               if (e is BBCodeText) {
                 Color? textColor = (!_isVisible && e.masked)
@@ -196,7 +196,6 @@ class _BBCodeWidgetState extends State<BBCodeWidget> {
               }
             }).toList(),
           ),
-          selectionHeightStyle: ui.BoxHeightStyle.max,
         ),
       ],
     );
