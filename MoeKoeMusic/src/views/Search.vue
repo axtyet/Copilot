@@ -11,8 +11,8 @@
             </div>
             <!-- 骨架屏加载效果 -->
             <div v-if="isLoading" class="skeleton-container">
-                <!-- 歌曲骨架屏 -->
-                <div v-if="searchType === 'song'" class="song-skeleton">
+                <!-- 歌曲/综合骨架屏 -->
+                <div v-if="searchType === 'song' || searchType === 'complex'" class="song-skeleton">
                     <div v-for="i in 10" :key="i" class="skeleton-item result-item">
                         <div class="skeleton-cover"></div>
                         <div class="skeleton-info">
@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <!-- 歌手/专辑/歌单共用骨架屏 -->
+                <!-- 歌手/专辑/歌单/mv共用骨架屏 -->
                 <div v-else class="grid-skeleton">
                     <div class="skeleton-grid">
                         <div v-for="i in 12" :key="i" :class="['skeleton-grid-card', {
@@ -42,28 +42,17 @@
                 </div>
             </div>
 
-            <template v-else-if="searchResults.length > 0">
+            <template v-else-if="hasSearchContent">
+                <!-- 综合搜索结果 -->
+                <ComplexSearchResults v-if="searchType === 'complex'" :data="complexSearchData"
+                    :keyword="searchQuery" @song-play="handleComplexSongPlay"
+                    @song-contextmenu="showContextMenu" @artist-click="handleArtistClick"
+                    @album-click="handleAlbumClick" @playlist-click="handlePlaylistClick"
+                    @mv-click="handleMvClick" @program-click="handleProgramClick" />
+
                 <!-- 歌曲搜索结果 -->
-                <ul v-if="searchType === 'song'">
-                    <li v-for="(result, index) in searchResults" :key="index" class="result-item"
-                        @click="playSong(result?.HQFileHash || result?.SQFileHash || result?.FileHash, result.OriSongName, $getCover(result.Image, 480), result.SingerName)"
-                        @contextmenu.prevent="showContextMenu($event, result)">
-                        <img :src="$getCover(result.Image, 100)" alt="Cover" />
-                        <div class="result-info">
-                            <p class="result-name">
-                                <span class="result-name-text">{{ result.OriSongName }}</span>
-                                <span v-if="Number(result?.IsOriginal) === 1" class="original-tag">原唱</span>
-                            </p>
-                            <p class="result-type">{{ result.SingerName }}</p>
-                        </div>
-                        <div class="result-meta">
-                            <div class="meta-column">
-                                <p class="result-duration">{{ $formatMilliseconds(result.Duration) }}</p>
-                                <p class="result-publish-date">{{ result.PublishDate }}</p>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                <SongSearchList v-else-if="searchType === 'song'" :songs="searchResults"
+                    @song-click="handleSongClick" @song-contextmenu="showContextMenu" />
 
                 <!-- 歌手搜索结果 -->
                 <ArtistGrid v-else-if="searchType === 'author'" :artists="searchResults"
@@ -72,11 +61,14 @@
                 <!-- 专辑搜索结果 -->
                 <AlbumGrid v-else-if="searchType === 'album'" :albums="searchResults" @album-click="handleAlbumClick" />
 
+                <!-- MV搜索结果 -->
+                <MvGrid v-else-if="searchType === 'mv'" :mvs="searchResults" @mv-click="handleMvClick" />
+
                 <!-- 歌单搜索结果 -->
                 <PlaylistGrid v-else-if="searchType === 'special'" :playlists="searchResults"
                     @playlist-click="handlePlaylistClick" />
 
-                <div class="pagination">
+                <div v-if="showPagination" class="pagination">
                     <button @click="prevPage" :disabled="currentPage === 1">{{ $t('shang-yi-ye') }}</button>
                     <div class="page-numbers">
                         <button v-for="pageNum in displayedPageNumbers" :key="pageNum" :class="['page-number', {
@@ -96,16 +88,20 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import ContextMenu from '../components/ContextMenu.vue';
-import AlbumGrid from '../components/AlbumGrid.vue';
-import PlaylistGrid from '../components/PlaylistGrid.vue';
-import ArtistGrid from '../components/ArtistGrid.vue';
+import SongSearchList from '../components/search/SongSearchList.vue';
+import AlbumGrid from '../components/search/AlbumGrid.vue';
+import PlaylistGrid from '../components/search/PlaylistGrid.vue';
+import ArtistGrid from '../components/search/ArtistGrid.vue';
+import MvGrid from '../components/search/MvGrid.vue';
+import ComplexSearchResults from '../components/search/ComplexSearchResults.vue';
 import { get } from '../utils/request';
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const searchQuery = ref(route.query.q || '');
-const searchType = ref(route.query.type || 'song');
+const searchType = ref(route.query.type || 'complex');
 const searchResults = ref([]);
+const complexSearchData = ref(null);
 const currentPage = ref(1);
 const pageSize = ref(30);
 const totalPages = ref(1);
@@ -113,9 +109,11 @@ const contextMenuRef = ref(null);
 const isLoading = ref(false);
 
 const searchTabs = [
+    { type: 'complex', name: '综合' },
     { type: 'song', name: '单曲' },
     { type: 'special', name: '歌单' },
     { type: 'album', name: '专辑' },
+    { type: 'mv', name: 'MV' },
     { type: 'author', name: '歌手' }
 ];
 
@@ -156,6 +154,14 @@ watch(() => route.query.q, (newQuery) => {
     performSearch();
 });
 
+watch(() => route.query.type, (newType) => {
+    const nextType = newType || 'song';
+    if (searchType.value === nextType) return;
+    currentPage.value = 1;
+    searchType.value = nextType;
+    performSearch();
+});
+
 const props = defineProps({
     playerControl: Object
 });
@@ -164,10 +170,49 @@ const playSong = (hash, name, img, author) => {
     props.playerControl.addSongToQueue(hash, name, img, author);
 };
 
+const handleSongClick = (song) => {
+    playSong(
+        song?.HQFileHash || song?.SQFileHash || song?.FileHash,
+        song?.OriSongName,
+        song?.Image?.replace('{size}', 480) || './assets/images/ico.png',
+        song?.SingerName
+    );
+};
+
+const handleComplexSongPlay = (song) => {
+    handleSongClick({
+        ...song,
+        OriSongName: song?.OriSongName || song?.SongName
+    });
+};
+
+const hasSearchContent = computed(() => {
+    if (searchType.value === 'complex') {
+        return !!searchQuery.value;
+    }
+    return searchResults.value.length > 0;
+});
+
+const showPagination = computed(() => {
+    return searchType.value !== 'complex' && totalPages.value > 1;
+});
+
 const performSearch = async () => {
     if (!searchQuery.value) return;
     isLoading.value = true;
+    searchResults.value = [];
+    totalPages.value = 1;
     try {
+        if (searchType.value === 'complex') {
+            complexSearchData.value = null;
+            const response = await get(`/search/complex?keywords=${encodeURIComponent(searchQuery.value)}`);
+            if (response.status === 1) {
+                complexSearchData.value = response.data;
+            }
+            return;
+        }
+
+        complexSearchData.value = null;
         const response = await get(`/search?keywords=${encodeURIComponent(searchQuery.value)}&page=${currentPage.value}&pagesize=${pageSize.value}&type=${searchType.value}`)
         if (response.status === 1) {
             searchResults.value = response.data.lists;
@@ -257,6 +302,21 @@ const handleArtistClick = (artist) => {
             singerid: artist.AuthorId
         }
     });
+};
+
+const handleMvClick = (mv) => {
+    router.push({
+        path: '/video',
+        query: {
+            hash: mv.MvHash,
+            title: encodeURIComponent(mv.MvName || mv.FileName || '')
+        }
+    });
+};
+
+const handleProgramClick = (program) => {
+    if (!program?.albumid) return;
+    router.push(`/PlaylistDetail?albumid=${program.albumid}`);
 };
 </script>
 
