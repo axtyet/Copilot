@@ -10,6 +10,7 @@ import { setupAutoUpdater } from './services/updater.js';
 import apiService from './services/apiService.js';
 import statusBarLyricsService from './services/statusBarLyricsService.js';
 import { setupDesktopShortcutIcon } from './services/desktopShortcutIcon.js';
+import { openLogPath, exportLog } from './services/logHelper.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -300,4 +301,14 @@ ipcMain.handle('open-mv-window', (e, url) => {
             throw error;
         }
     })();
+});
+
+ipcMain.handle('open-log-path', async (e) => {
+    try { return { path: await openLogPath() } }
+    catch (err) { return { error: err }; }
+});
+
+ipcMain.handle('export-log', (e) => {
+    try { return { data: exportLog() }; }
+    catch (err) { return { error: err }; }
 });

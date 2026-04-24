@@ -32,4 +32,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     }),
     showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
     openMvWindow: (url) => ipcRenderer.invoke('open-mv-window', url),
+    openLogPath: () => ipcRenderer.invoke('open-log-path'),
+    exportLog: () => ipcRenderer.invoke('export-log'),
 });
