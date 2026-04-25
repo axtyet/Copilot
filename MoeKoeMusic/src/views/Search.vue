@@ -10,36 +10,12 @@
                 </button>
             </div>
             <!-- 骨架屏加载效果 -->
-            <div v-if="isLoading" class="skeleton-container">
+            <div v-if="isLoading">
                 <!-- 歌曲/综合骨架屏 -->
-                <div v-if="searchType === 'song' || searchType === 'complex'" class="song-skeleton">
-                    <div v-for="i in 10" :key="i" class="skeleton-item result-item">
-                        <div class="skeleton-cover"></div>
-                        <div class="skeleton-info">
-                            <div class="skeleton-line"></div>
-                            <div class="skeleton-line short"></div>
-                        </div>
-                        <div class="skeleton-meta">
-                            <div class="skeleton-line tiny"></div>
-                            <div class="skeleton-line tiny"></div>
-                        </div>
-                    </div>
-                </div>
+                <CommonSkeleton v-if="searchType === 'song' || searchType === 'complex'" variant="song-list" :count="10" />
 
                 <!-- 歌手/专辑/歌单/mv共用骨架屏 -->
-                <div v-else class="grid-skeleton">
-                    <div class="skeleton-grid">
-                        <div v-for="i in 12" :key="i" :class="['skeleton-grid-card', {
-                            'skeleton-artist-card': searchType === 'author',
-                            'skeleton-album-card': searchType === 'album',
-                            'skeleton-playlist-card': searchType === 'special'
-                        }]">
-                            <div :class="[searchType === 'author' ? 'skeleton-avatar' : 'skeleton-cover square']"></div>
-                            <div class="skeleton-line"></div>
-                            <div v-if="searchType !== 'author'" class="skeleton-line short"></div>
-                        </div>
-                    </div>
-                </div>
+                <CommonSkeleton v-else variant="search-grid" :count="12" :avatar="searchType === 'author'" />
             </div>
 
             <template v-else-if="hasSearchContent">
@@ -88,6 +64,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import ContextMenu from '../components/ContextMenu.vue';
+import CommonSkeleton from '../components/CommonSkeleton.vue';
 import SongSearchList from '../components/search/SongSearchList.vue';
 import AlbumGrid from '../components/search/AlbumGrid.vue';
 import PlaylistGrid from '../components/search/PlaylistGrid.vue';
@@ -536,100 +513,5 @@ const handleProgramClick = (program) => {
     font-weight: bold;
     margin-bottom: 30px;
     color: var(--primary-color);
-}
-</style>
-
-<style lang="scss" scoped>
-@keyframes shimmer {
-    0% {
-        background-position: -468px 0;
-    }
-
-    100% {
-        background-position: 468px 0;
-    }
-}
-
-.skeleton-container {
-    width: 100%;
-}
-
-.skeleton-item {
-    margin-bottom: 15px;
-}
-
-.skeleton-cover,
-.skeleton-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 5px;
-    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-    background-size: 800px 104px;
-    animation: shimmer 1.5s linear infinite forwards;
-}
-
-.skeleton-avatar {
-    border-radius: 50%;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 10px;
-}
-
-.skeleton-cover.square {
-    width: 150px;
-    height: 150px;
-    margin: 0 auto 10px;
-}
-
-.skeleton-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.skeleton-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 120px;
-    align-items: flex-end;
-}
-
-.skeleton-line {
-    height: 16px;
-    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-    background-size: 800px 104px;
-    animation: shimmer 1.5s linear infinite forwards;
-    border-radius: 3px;
-    width: 100%;
-    margin-top: 5px;
-
-    &.short {
-        width: 60%;
-    }
-
-    &.tiny {
-        width: 40%;
-        height: 12px;
-    }
-}
-
-.skeleton-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-}
-
-.skeleton-artist-card,
-.skeleton-album-card,
-.skeleton-playlist-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    transition: transform 0.3s;
 }
 </style>
