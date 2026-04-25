@@ -1,6 +1,6 @@
 <template>
     <div class="discover-page">
-        <h2 class="section-title">{{ $t('fa-xian') }}</h2>
+        <img class="discover-floating-arona" src="/assets/images/arona.png" alt="Arona" />
 
         <div class="discover-switch">
             <button v-for="tab in discoverTabs" :key="tab.key" class="switch-item"
@@ -67,14 +67,20 @@ const handleDiscoverTabClick = (tab) => {
 
 <style lang="scss" scoped>
 .discover-page {
-    padding: 20px;
+    position: relative;
+    padding: 40px 20px 20px;
 }
 
-.section-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    color: var(--primary-color);
+.discover-floating-arona {
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    z-index: 10;
+    width: clamp(128px, 20vw, 200px);
+    height: auto;
+    transform: translateX(-50%);
+    pointer-events: none;
+    user-select: none;
 }
 
 .discover-switch {
