@@ -931,7 +931,7 @@ const selectOption = async (option) => {
         },
         log: async () => {
             let result;
-            switch(option.value) {
+            switch (option.value) {
                 case 'open-path':
                     result = await window.electronAPI.openLogPath();
                     break;
@@ -941,9 +941,12 @@ const selectOption = async (option) => {
                 default:
                     break;
             }
-            if(result.error) {
+            if (result?.error) {
                 console.error(`日志操作 ${option.value} 失败:`, result.error);
                 window.$modal.alert(`日志操作失败，详细信息请查看控制台`);
+            }
+            if (option.value === 'export-log' && result?.filePath) {
+                await window.$modal.alert(`日志(已脱敏)已导出到:\n${result.filePath}`);
             }
         }
     };

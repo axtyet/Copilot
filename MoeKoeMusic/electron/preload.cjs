@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         extensionId,
         extensionDir,
     }),
+    startUpdateDownload: () => ipcRenderer.invoke('start-update-download'),
     showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
     openMvWindow: (url) => ipcRenderer.invoke('open-mv-window', url),
     openLogPath: () => ipcRenderer.invoke('open-log-path'),
