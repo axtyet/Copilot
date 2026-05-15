@@ -165,6 +165,37 @@ export const openRegisterUrl = (registerUrl) => {
     }
 };
 
+export const openMvPlayer = async (router, hash, title = '视频播放') => {
+    const resolved = router.resolve({
+        path: '/video',
+        query: { hash, title }
+    });
+    const base = window.location.href.split('#')[0];
+    const href = resolved.href || '';
+    const fullUrl = href.startsWith('#')
+        ? `${base}${href}`
+        : `${base}#${href.startsWith('/') ? href : `/${href}`}`;
+
+    if (window.electronAPI) {
+        await window.electronAPI.openMvWindow(fullUrl);
+        return;
+    }
+
+    const width = 960;
+    const height = 620;
+    const left = Math.max(0, Math.round((window.screen.width - width) / 2));
+    const top = Math.max(0, Math.round((window.screen.height - height) / 2));
+    const features = `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`;
+
+    const popup = window.open(fullUrl, 'moekoe-mv', features);
+    if (popup) {
+        popup.focus?.();
+        return;
+    }
+
+    await router.push(resolved);
+};
+
 // 分享
 import { MoeAuthStore } from '../stores/store';
 export const share = (songName, id, type = 0, songDesc = '') => {
