@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:kazumi/pages/player/player_item_panel.dart';
 import 'package:kazumi/pages/player/player_panel_hold.dart';
+import 'package:kazumi/pages/player/player_screenshot_feedback_overlay.dart';
 import 'package:kazumi/pages/player/smallest_player_item_panel.dart';
 import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/services/logging/logger.dart';
@@ -71,10 +72,7 @@ class PlayerItem extends StatefulWidget {
 }
 
 class _PlayerItemState extends State<PlayerItem>
-    with
-        WindowListener,
-        WidgetsBindingObserver,
-        SingleTickerProviderStateMixin {
+    with WindowListener, WidgetsBindingObserver, TickerProviderStateMixin {
   Box setting = GStorage.setting;
   late final PlayerController playerController;
   final VideoPageController videoPageController =
@@ -132,8 +130,9 @@ class _PlayerItemState extends State<PlayerItem>
 
   double lastVolume = 0;
 
-  // 过渡动画控制器
-  AnimationController? animationController;
+  late final AnimationController _panelVisibilityController;
+  late final AnimationController _screenshotFeedbackController;
+  late final Animation<double> _screenshotFeedbackAnimation;
 
   double lastPlayerSpeed = 1.0;
   int episodeNum = 0;
@@ -457,25 +456,18 @@ class _PlayerItemState extends State<PlayerItem>
 
   void handleDanmaku() {
     playerController.danmaku.canvasController.clear();
-    // if true, turn off danmaku.
     if (playerController.danmaku.danmakuOn) {
-      setState(() {
-        playerController.danmaku.danmakuOn = false;
-      });
+      playerController.danmaku.danmakuOn = false;
       setting.put(SettingBoxKey.danmakuEnabledByDefault, false);
       unawaited(_updateAndroidPIPActions(force: true));
       return;
     }
-    // if false and empty, show dialog.
     if (playerController.danmaku.danDanmakus.isEmpty) {
       showDanmakuSwitch();
       unawaited(_updateAndroidPIPActions(force: true));
       return;
     }
-    // turn on danmaku.
-    setState(() {
-      playerController.danmaku.danmakuOn = true;
-    });
+    playerController.danmaku.danmakuOn = true;
     setting.put(SettingBoxKey.danmakuEnabledByDefault, true);
     unawaited(_updateAndroidPIPActions(force: true));
   }
@@ -590,7 +582,7 @@ class _PlayerItemState extends State<PlayerItem>
 
   //截图
   Future<void> handleScreenshot() async {
-    KazumiDialog.showToast(message: '截图中...');
+    _playScreenshotFeedback();
     try {
       Uint8List? screenshot = await playerController.screenshotPng();
 
@@ -608,14 +600,19 @@ class _PlayerItemState extends State<PlayerItem>
         fileName: DateTime.timestamp().millisecondsSinceEpoch.toString(),
         skipIfExists: false,
       );
-      if (result.isSuccess) {
-        KazumiDialog.showToast(message: '截图保存到相簿成功');
-      } else {
+      if (!result.isSuccess) {
         KazumiDialog.showToast(message: '截图保存失败：${result.errorMessage}');
       }
     } catch (e) {
       KazumiDialog.showToast(message: '截图失败：$e');
     }
+  }
+
+  void _playScreenshotFeedback() {
+    if (!mounted) {
+      return;
+    }
+    _screenshotFeedbackController.forward(from: 0);
   }
 
   // 启用超分辨率（质量档）时弹出提示
@@ -730,7 +727,7 @@ class _PlayerItemState extends State<PlayerItem>
       playerController.panel.canHidePlayerPanel && _playerPanelHolds.isEmpty;
 
   void showVideoController({bool restartHideTimer = true}) {
-    animationController?.forward();
+    _panelVisibilityController.forward();
     playerController.panel.showVideoController = true;
     if (restartHideTimer && _canHidePlayerPanel) {
       _startHideTimer();
@@ -745,7 +742,7 @@ class _PlayerItemState extends State<PlayerItem>
     if (!_canHidePlayerPanel) {
       return;
     }
-    animationController?.reverse();
+    _panelVisibilityController.reverse();
     _cancelHideTimer();
     playerController.panel.showVideoController = false;
   }
@@ -950,8 +947,8 @@ class _PlayerItemState extends State<PlayerItem>
       // 音量相关
       if (!playerController.panel.volumeSeeking) {
         if (isDesktop()) {
-          playerController.playback.applyExternalVolume(
-              playerController.playback.playerVolume);
+          playerController.playback
+              .applyExternalVolume(playerController.playback.playerVolume);
         }
       }
       // 亮度相关
@@ -1062,10 +1059,20 @@ class _PlayerItemState extends State<PlayerItem>
                                 try {
                                   videoPageController
                                       .cancelAutomaticDanmakuLoad();
-                                  await playerController.danmaku
+                                  final hasDanmakus = await playerController
+                                      .danmaku
                                       .getDanDanmakuByEpisodeID(
                                           episode.episodeId);
-                                  KazumiDialog.showToast(message: '弹幕切换成功');
+                                  if (!mounted) {
+                                    return;
+                                  }
+                                  if (hasDanmakus) {
+                                    playerController.danmaku.danmakuOn = true;
+                                    KazumiDialog.showToast(message: '弹幕切换成功');
+                                  } else {
+                                    playerController.danmaku.danmakuOn = false;
+                                    KazumiDialog.showToast(message: '未找到弹幕内容');
+                                  }
                                 } catch (e) {
                                   KazumiDialog.showToast(message: '弹幕切换失败');
                                 }
@@ -1585,9 +1592,17 @@ class _PlayerItemState extends State<PlayerItem>
       unawaited(_updateAndroidPIPActions(force: true));
     }
     WidgetsBinding.instance.addObserver(this);
-    animationController ??= AnimationController(
+    _panelVisibilityController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
+    );
+    _screenshotFeedbackController = AnimationController(
+      duration: const Duration(milliseconds: 420),
+      vsync: this,
+    );
+    _screenshotFeedbackAnimation = CurvedAnimation(
+      parent: _screenshotFeedbackController,
+      curve: Curves.linear,
     );
     webDavEnable = setting.get(SettingBoxKey.webDavEnable, defaultValue: false);
     webDavEnableHistory =
@@ -1646,8 +1661,8 @@ class _PlayerItemState extends State<PlayerItem>
     hideTimer?.cancel();
     mouseScrollerTimer?.cancel();
     hideVolumeUITimer?.cancel();
-    animationController?.dispose();
-    animationController = null;
+    _panelVisibilityController.dispose();
+    _screenshotFeedbackController.dispose();
     _disposePlayerMenu();
     if (Platform.isAndroid) {
       unawaited(_syncAndroidPIPPlayerPageState(false));
@@ -1683,7 +1698,7 @@ class _PlayerItemState extends State<PlayerItem>
                     displayVideoController();
                   } else {
                     if (!playerController.panel.showVideoController) {
-                      animationController?.forward();
+                      _panelVisibilityController.forward();
                       playerController.panel.showVideoController = true;
                     }
                   }
@@ -1811,6 +1826,11 @@ class _PlayerItemState extends State<PlayerItem>
                         ),
                       ),
                     ),
+                    Positioned.fill(
+                      child: PlayerScreenshotFeedbackOverlay(
+                        animation: _screenshotFeedbackAnimation,
+                      ),
+                    ),
                     // 播放器控制面板
                     (needFullPanel(context))
                         ? PlayerItemPanel(
@@ -1827,7 +1847,8 @@ class _PlayerItemState extends State<PlayerItem>
                             handleSuperResolutionChange:
                                 handleSuperResolutionChange,
                             handlePreNextEpisode: handlePreNextEpisode,
-                            animationController: animationController!,
+                            panelVisibilityController:
+                                _panelVisibilityController,
                             keyboardFocus: widget.keyboardFocus,
                             sendDanmaku: widget.sendDanmaku,
                             acquirePlayerPanelHold: acquirePlayerPanelHold,
@@ -1855,7 +1876,8 @@ class _PlayerItemState extends State<PlayerItem>
                             handleProgressBarDragEnd: handleProgressBarDragEnd,
                             handleSuperResolutionChange:
                                 handleSuperResolutionChange,
-                            animationController: animationController!,
+                            panelVisibilityController:
+                                _panelVisibilityController,
                             keyboardFocus: widget.keyboardFocus,
                             acquirePlayerPanelHold: acquirePlayerPanelHold,
                             handleDanmaku: handleDanmaku,
@@ -1944,7 +1966,8 @@ class _PlayerItemState extends State<PlayerItem>
                                         .invalidatePreciseVolume();
                                   }
                                   final double baseVolume = playerController
-                                              .playback.preciseVolume >= 0
+                                              .playback.preciseVolume >=
+                                          0
                                       ? playerController.playback.preciseVolume
                                       : playerController.playback.volume;
                                   final double level = (totalHeight) * 0.03;
