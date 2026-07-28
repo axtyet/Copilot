@@ -114,9 +114,12 @@
                 <!-- 音量控制 -->
                 <div class="volume-control" @wheel="handleVolumeScroll">
                     <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'" @click="toggleMute"></i>
-                    <div class="volume-slider" @mousedown="onDragStart">
-                        <div class="volume-progress" :style="{ width: volume + '%' }"></div>
-                        <input type="range" min="0" max="100" v-model="volume" @input="changeVolume" />
+                    <div class="volume-slider-wrap" :class="{ 'show-volume-value': isDragging }">
+                        <div class="volume-value" :style="volumeValueStyle">{{ volumePercentText }}</div>
+                        <div class="volume-slider" @mousedown="onDragStart">
+                            <div class="volume-progress" :style="{ width: volume + '%' }"></div>
+                            <input type="range" min="0" max="100" v-model="volume" @input="changeVolume" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -232,7 +235,7 @@
                 </div>
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
                     <template v-if="lyricsData.length > 0">
-                        <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                        <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line', 'lyrics-align-left': lyricsAlign === 'left' }"
                             :style="{ fontSize: lyricsFontSize, fontFamily: lyricsFontFamily }">
                             <transition name="single-lyric-fade" appear>
                                 <div class="line-group" v-if="currentSingleLyricsLine" :key="singleLyricsLineIndex">
@@ -247,7 +250,7 @@
                                 </div>
                             </transition>
                         </div>
-                        <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                        <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line', 'lyrics-align-left': lyricsAlign === 'left' }"
                             :style="{ fontSize: lyricsFontSize, fontFamily: lyricsFontFamily, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                             <div class="line-group" :class="{ 'current-line-group': currentLyricsLineIndex === lineIndex }" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
                                 <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
@@ -522,6 +525,18 @@ const updateCurrentTime = throttle(() => {
 // 初始化各个模块
 const audioController = useAudioController({ onSongEnd, updateCurrentTime });
 const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized } = audioController;
+const volumePercentText = computed(() => `${Math.round(volume.value)}%`);
+const volumeValueStyle = computed(() => {
+    const percent = Math.round(volume.value);
+    const offset = percent < 16 ? 0 : percent > 84 ? -100 : -50;
+    const arrowOffset = percent < 16 ? '10px' : percent > 84 ? 'calc(100% - 10px)' : '50%';
+
+    return {
+        left: `${percent}%`,
+        '--volume-value-offset': `${offset}%`,
+        '--volume-arrow-offset': arrowOffset
+    };
+});
 
 const lyricsHandler = useLyricsHandler(t);
 const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;
@@ -1275,7 +1290,7 @@ const handleWindowResize = () => {
         const lineIndex = getCurrentLineIndex(audio.currentTime);
         const lineElement = document.querySelectorAll('.line-group')[lineIndex];
         if (!lyricsContainer || !lineElement) return;
-        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2);
+        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2) - 32;
     }, 150);
 };
 
