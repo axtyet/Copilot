@@ -81,9 +81,18 @@ class SettingsSection extends StatelessWidget {
 /// small ones in between, and a pressed row morphing out of the group. That
 /// morph is what separates the rows, in place of a divider.
 class SettingsSplitGroup extends StatelessWidget {
-  const SettingsSplitGroup({super.key, required this.children});
+  const SettingsSplitGroup({
+    super.key,
+    required this.children,
+    this.outerRadius = _outerRadius,
+  });
 
   final List<Widget> children;
+
+  /// The group's two end corners, and the radius a pressed row morphs to.
+  /// Settings pages take the default; a page whose surrounding cards run at a
+  /// smaller scale passes theirs so the group sits level with them.
+  final double outerRadius;
 
   /// Hand to a row's [InkWell.onHighlightChanged] to drive the morph. Null
   /// outside a group, which leaves the row's shape static.
@@ -103,6 +112,7 @@ class SettingsSplitGroup extends StatelessWidget {
           _SplitRow(
             first: i == 0,
             last: i == children.length - 1,
+            outerRadius: outerRadius,
             child: children[i],
           ),
         ],
@@ -115,11 +125,13 @@ class _SplitRow extends StatefulWidget {
   const _SplitRow({
     required this.first,
     required this.last,
+    required this.outerRadius,
     required this.child,
   });
 
   final bool first;
   final bool last;
+  final double outerRadius;
   final Widget child;
 
   @override
@@ -131,8 +143,9 @@ class _SplitRowState extends State<_SplitRow> {
 
   @override
   Widget build(BuildContext context) {
-    final top = widget.first || _pressed ? _outerRadius : _innerRadius;
-    final bottom = widget.last || _pressed ? _outerRadius : _innerRadius;
+    final outer = widget.outerRadius;
+    final top = widget.first || _pressed ? outer : _innerRadius;
+    final bottom = widget.last || _pressed ? outer : _innerRadius;
     return Material(
       // Material animates its own shape, so the morph needs no controller.
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -184,6 +197,214 @@ class SettingsRadioSection<T> extends StatelessWidget {
       groupValue: groupValue,
       onChanged: onChanged,
       child: SettingsSection(title: title, tiles: tiles),
+    );
+  }
+}
+
+Color _disabledOn(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38);
+
+/// The icon-and-text run every row opens with. Callers wrap it in [Expanded].
+class _TileLabel extends StatelessWidget {
+  const _TileLabel({
+    required this.title,
+    this.leading,
+    this.description,
+    this.enabled = true,
+  });
+
+  final Widget title;
+  final IconData? leading;
+  final Widget? description;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final disabled = enabled ? null : _disabledOn(context);
+    final foreground = disabled ?? colorScheme.onSurface;
+    final secondary = disabled ?? colorScheme.onSurfaceVariant;
+
+    return Row(
+      children: [
+        if (leading != null) ...[
+          Icon(leading, size: 24, color: secondary),
+          const SizedBox(width: 16),
+        ],
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DefaultTextStyle.merge(
+                style: textTheme.bodyLarge?.copyWith(color: foreground),
+                child: title,
+              ),
+              if (description != null) ...[
+                const SizedBox(height: 2),
+                DefaultTextStyle.merge(
+                  style: textTheme.bodySmall?.copyWith(color: secondary),
+                  child: description!,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A row that opens a whole category rather than changing one value: the
+/// tonal icon badge marks that step down, which is why [SettingsTile] keeps a
+/// flat icon. Drop it in a [SettingsSplitGroup] like any other row.
+class SettingsCategoryTile extends StatelessWidget {
+  const SettingsCategoryTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return InkWell(
+      onTap: onTap,
+      onHighlightChanged: SettingsSplitGroup.pressReporterOf(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: colorScheme.secondaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 18,
+                color: colorScheme.onSecondaryContainer,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: textTheme.bodyLarge),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A row whose control is a slider. The label line carries a tonal readout of
+/// the current value and the track spans the row beneath it, so the icon, the
+/// track and the text never share a line.
+class SettingsSliderTile extends StatelessWidget {
+  const SettingsSliderTile({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.valueLabel,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.divisions,
+    this.leading,
+    this.description,
+  });
+
+  final Widget title;
+  final IconData? leading;
+  final Widget? description;
+  final String valueLabel;
+  final double value;
+  final double min;
+  final double max;
+  final int? divisions;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _TileLabel(
+                  title: title,
+                  leading: leading,
+                  description: description,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  valueLabel,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onSecondaryContainer,
+                    // Steady digit widths, so dragging can't jitter the pill.
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            // The pill is the readout, so no bubble rides the thumb; the zero
+            // inset then measures the track against the row rather than the
+            // thumb's overlay box.
+            showValueIndicator: ShowValueIndicator.never,
+            padding: EdgeInsets.zero,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -267,9 +488,8 @@ class SettingsTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final disabled = colorScheme.onSurface.withValues(alpha: 0.38);
-    final foreground = enabled ? colorScheme.onSurface : disabled;
-    final secondary = enabled ? colorScheme.onSurfaceVariant : disabled;
+    final secondary =
+        enabled ? colorScheme.onSurfaceVariant : _disabledOn(context);
 
     return InkWell(
       onTap: _tapHandler(context),
@@ -280,27 +500,12 @@ class SettingsTile<T> extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 32),
           child: Row(
             children: [
-              if (leading != null) ...[
-                Icon(leading, size: 24, color: secondary),
-                const SizedBox(width: 16),
-              ],
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DefaultTextStyle.merge(
-                      style: textTheme.bodyLarge?.copyWith(color: foreground),
-                      child: title,
-                    ),
-                    if (description != null) ...[
-                      const SizedBox(height: 2),
-                      DefaultTextStyle.merge(
-                        style: textTheme.bodySmall?.copyWith(color: secondary),
-                        child: description!,
-                      ),
-                    ],
-                  ],
+                child: _TileLabel(
+                  title: title,
+                  leading: leading,
+                  description: description,
+                  enabled: enabled,
                 ),
               ),
               if (value != null) ...[
