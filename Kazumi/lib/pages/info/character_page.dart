@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:kazumi/bean/widget/empty_state_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:kazumi/bean/card/user_comments_card.dart';
@@ -113,13 +114,9 @@ class _CharacterPageState extends State<CharacterPage> {
     final character = _character;
     if (character != null && character.id == 0) {
       return GeneralErrorWidget(
-        errMsg: '人物资料加载失败',
-        actions: [
-          GeneralErrorButton(
-            onPressed: _loadCharacter,
-            text: '点击重试',
-          ),
-        ],
+        title: '人物资料加载失败',
+        errMsg: '请检查网络连接后重试。',
+        onRetry: _loadCharacter,
       );
     }
 
@@ -173,20 +170,18 @@ class _CharacterPageState extends State<CharacterPage> {
     if (_commentsError) {
       return SliverFillRemaining(
         child: GeneralErrorWidget(
-          errMsg: '什么都没有找到 (´;ω;`)',
-          actions: [
-            GeneralErrorButton(
-              onPressed: _loadComments,
-              text: '点击重试',
-            ),
-          ],
+          title: '人物吐槽加载失败',
+          errMsg: '请检查网络连接后重试。',
+          onRetry: _loadComments,
         ),
       );
     }
     if (_comments.isEmpty) {
       return const SliverFillRemaining(
-        child: Center(
-          child: Text('什么都没有找到 (´;ω;`)'),
+        hasScrollBody: false,
+        child: GeneralEmptyState(
+          icon: Icons.chat_bubble_outline_rounded,
+          title: '还没有评论',
         ),
       );
     }
