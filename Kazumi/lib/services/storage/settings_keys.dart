@@ -148,6 +148,11 @@ class SettingsKeys {
     false,
     group: SettingGroup.danmaku,
   );
+  static const danmakuChConvert = SettingKey<int>(
+    'danmakuChConvert',
+    0,
+    group: SettingGroup.danmaku,
+  );
   static const danmakuArea = SettingKey<double>(
     _SettingBoxKey.danmakuArea,
     1.0,
@@ -261,6 +266,12 @@ class SettingsKeys {
   static const imageAcceleration = SettingKey<String>(
     'imageAcceleration',
     'ech',
+    group: SettingGroup.proxy,
+  );
+  // An unset mode inherits the old mirror switch (enabled by default).
+  static const bangumiAcceleration = SettingKey<String>(
+    'bangumiAcceleration',
+    '',
     group: SettingGroup.proxy,
   );
   static const enableSystemProxy = SettingKey<bool>(
@@ -569,6 +580,7 @@ class SettingsKeys {
     danmakuBottom,
     danmakuMassive,
     danmakuDeduplication,
+    danmakuChConvert,
     danmakuArea,
     danmakuColor,
     danmakuDuration,
@@ -592,6 +604,7 @@ class SettingsKeys {
     enableGitProxy,
     enableBangumiProxy,
     imageAcceleration,
+    bangumiAcceleration,
     enableSystemProxy,
     defaultStartupPage,
     webDavEnable,
